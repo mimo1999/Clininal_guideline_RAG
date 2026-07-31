@@ -1,0 +1,70 @@
+Angemeldet
+S3-Leitlinie Diagnostik, Therapie und Nachsorge der Patientin mit Zervixkarzinom (Konsultationsfassung: https://register.awmf.org/de/leitlinien/detail/032-033OL%20KF)
+
+
+Art der Anmeldung:
+Überarbeitung
+Angemeldete Klasse:
+S3
+Anmeldedatum:
+04.12.2023
+Geplante Fertigstellung:
+31.10.2026
+Gründe für die Themenwahl:
+Der Aktualisierungsbedarf der S3 Leitlinie „Diagnostik, Therapie und Nachsorge der Patienten mit Zervixkarzinom“ begründet sich u.a. wie folgt:
+Die Gültigkeitsdauer der zweiten Version der S3-Leitlinie von 2020 wurde auf maximal 5 Jahre oder bis zur nächsten Aktualisierung festgelegt
+Die Rationale für die kontinuierliche Überarbeitung resultiert aus der regelmäßigen Verfügbarkeit neuer wissenschaftlicher Erkenntnisse, die sich aus dem Abschluss von Therapiestudien entwickelt, die zu einer Veränderung des Therapieverhaltens führen kann (z. B. Keynote 826, Interlace oder Keynote A18-Studie)
+Neue Studienergebnisse anhand derer die Leitlinie auf den aktuellen Stand der Publikationslage gebracht werden muss.
+Das Update ist zwingend erforderlich, um die Aktualität der Leitlinie zu erhalten und sowohl behandelnden Ärzten als auch Patienten eine Orientierungshilfe und praktische Empfehlungen zu geben.
+Zielorientierung der Leitlinie:
+Die Leitlinie „Diagnostik, Therapie und Nachsorge der Patientin mit Zervixkarzinom“ versteht sich als ein evidenz- und konsensusbasiertes Instrument zur Versorgung der Patientinnen mit Zervixkarzinom. Sie dient dazu, den Patientinnen dem jeweiligen Stand der Erkrankung angemessene, wissenschaftlich begründete, aktuelle und wirtschaftliche Verfahren in der Diagnostik, Therapie, Nachsorge und Rehabilitation anzubieten. Die jetzt geplante Leitlinie soll die Grundlagen für handlungsrelevante ärztliche Entscheidungsprozesse liefern. Dies auch vor dem Hintergrund des Konzepts des „shared-decision makings“.
+Neben dem allgemeinen Ziel, die Versorgung von Patientinnen mit Zervixkarzinom durch die Optimierung der Diagnosekette und der stadiengerechten Therapie bei Ersterkrankung, Rezidiv und/oder Metastasierung zu verbessern, sollten mit der S3-Leitlinie die nachfolgenden Ziele erreicht werden:
+Etablierung eines „Qualitäts-Standards“ als Basis für eine individuell zugeschnittene, qualitativ hochwertige Therapie;
+Verbesserung von Lebensqualität und mittel- bzw. langfristige Senkung von Mortalität dieser Patientinnen durch Umsetzung der Empfehlungen dieser Leitlinie;
+Flächendeckende Umsetzung einer multidisziplinären, qualitätsgesicherten und sektorübergreifenden Versorgung des Zervixkarzinoms, dabei auch konkretes Hinwirken auf Verbesserungen hinsichtlich einer bedarfsgerechten und qualitätsgesicherten psychosozialen Betreuung und Rehabilitation;
+Unterstützung von Ärzten und Patientinnen in der Entscheidungsfindung bei medizinischen Entscheidungen durch formal konsentierte Empfehlungen;
+Unterstützung der Einbindung der Patientinnen in Therapieentscheidungen unter Berücksichtigung ihrer individuellen Bedürfnisse;
+Schaffung einer Grundlage für inhaltlich gezielte ärztliche Aus-, Fort- und Weiterbildungsmaßnahmen mit systematischer Berücksichtigung der Leitlinienempfehlungen in der Aus-, Fort- und Weiterbildung und in Qualitätsmanagementsystemen;
+
+Die Aktualisierung der Leitlinie soll dazu beitragen, eine angemessene Gesundheitsversorgung in der Diagnostik und Therapie und Nachsorge von Patientinnen mit Zervixkarzinom zu garantieren und die Basis für eine individuell stadienadaptierte, den Patientinnenwunsch respektierende, qualitätsgesicherte Therapie bieten. Die geplante überarbeitete S3-Leitlinie erlaubt wie die Vorgängerversion die flächendeckende Umsetzung einer interdisziplinären, qualitätsgesicherten und sektorübergreifenden Therapie. Ziel der flächendeckenden Verbreitung und Implementierung der überarbeiteten S3-Leitline ist es, die Diagnosekette und die stadiengerechte Therapie bei der Ersterkrankung als auch beim Rezidiv und in der Palliativsituation zu optimieren. Dadurch sollen mittel- und langfristig die Mortalität der Patientinnen mit Zervixkarzinom gesenkt und die Lebensqualität erhöht werden.
+Um die Aktualität der Leitlinie auf dem höchst möglichen Niveau zu halten, sehen wir regelmäßige Updates als notwendig an, die das Werk zu einer aktuellen und lebendigen Leitlinie werden lassen.
+Verbindung zu themenverwandten Leitlinien:
+Prävention des Zervixkarzinoms
+Psychoonkologische Diagnostik, Beratung und Behandlung von erwachsenen Krebspatient*innen
+Supportive Therapie bei onkologischen PatientInnen
+Bewegungstherapie bei onkologischen Erkrankungen
+Palliativmedizin für Patient:innen mit einer nicht heilbaren Krebserkrankung
+Anmelder bei der AWMF (Person):
+Dr. Markus Follmann, MPH, MSc
+Berlin
+i.A. des Leitlinienprogramms Onkologie der AWMF, DKG und DKH
+Anmeldende Fachgesellschaft(en):
+Deutsche Gesellschaft für Gynäkologie und Geburtshilfe e.V. (DGGG)
+(Visitenkarte)
+Deutsche Krebsgesellschaft e.V. (DKG)
+
+S3-Leitlinie Diagnostik, Therapie und Nachsorge der Patientin mit Zervixkarzinom
+
+
+Version:
+2.0
+Stand:
+10.03.2021
+Gültig bis:
+31.10.2025 (in Überarbeitung)
+Aktueller Hinweis:
+14.10.2022: Kurzinformation des äzq eingestellt; 17.08.2022: english long version published;
+Verfügbare Dokumente:
+{"Langfassung der Leitlinie Diagnostik, Therapie und Nachsorge der Patientin mit Zervixkarzinom": "032-033OLl_S3_Diagnostik_Therapie_Nachsorge_Zervixkarzinom_2022-03.pdf"}, {"Kurzfassung" : "032-033OLk_S3_Diagnostik_Therapie_Nachsorge_Zervixkarzinom_2022-03.pdf"}
+{"Leitlinienreport" : "032-033OLm_S3_Diagnostik_Therapie_Nachsorge_Zervixkarzinom_2021-03.pdf"}
+{"Patientenleitlinie Gebärmutterhalskrebs": "032-033OLp_S3_Gebaermutterhalskrebs_Zervixkarzinom_2020-08.pdf"}, 
+{"english long version Evidence-based Guideline Diagnosis, Treatment, and Follow-Up in Patients with Cervical Carcinoma": "032-033OLeng_S3_GGPO_Cervical_Carcinoma_2022-08.pdf"}, {Dia-Version" : "032-033OLd_S3_Diagnostik_Therapie_Nachsorge_Zervixkarzinom_2022-03.pdf"}
+{"Kurzinformation Gebärmutterhalskrebs – Meist gut zu behandeln des äzq" : "032-033OLki_S3_Diagnostik_Therapie_Nachsorge_Zervixkarzinom_2022-10.pdf"}
+auch verfügbar in der OL-App
+weiterlesen
+und im Leitlinien-Hub des OL
+weiterlesen
+Konsultationsfasssung Update abrufbar bis 07.09.2026 unter
+weiterlesen
+
+

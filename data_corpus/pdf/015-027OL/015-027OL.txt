@@ -1,0 +1,49 @@
+Angemeldet
+S3-Leitlinie Prävention des Zervixkarzinoms
+
+
+Art der Anmeldung:
+Überarbeitung
+Angemeldete Klasse:
+S3
+Anmeldedatum:
+06.01.2022
+Geplante Fertigstellung:
+31.12.2026
+Gründe für die Themenwahl:
+Update der 2022 ablaufenden Leitlinie.
+Zielorientierung der Leitlinie:
+Die sekundäre Prävention des Gebärmutterhalskrebses mittels verschiedener Maßnahmen evidenzbasiert zu verbessern und zwar hinsichtlich
+des Potentials eines organisierten Screening-Programms
+des Nutzens eines HPV-Screenings bzw. eines kombinierten HPV- und Pap-Screenings versus der eines zytologischen Screenings
+des Screenings nach HPV-Impfung
+der Definition von Altersgrenzen und Screeningintervalle
+der Möglichkeiten, bisherige Nicht-Teilnehmer zum Screening zu bewegen
+des differentialdiagnostischen Managements (Abklärungs-Algorithmus bei auffälligen zervikalen Veränderungen, Biomarker, Kolposkopie)
+des therapeutischen Vorgehens bei histologisch gesicherter Dysplasie
+der strukturierten Nachkontrolle nach Zervixdysplasie-Behandlung
+Verbindung zu themenverwandten Leitlinien:
+Impfprävention HPV-assoziierter Neoplasien
+Diagnostik, Therapie und Nachsorge der Patientin mit Zervixkarzinom
+Sexuell übertragbare Infektionen (STI) - Beratung, Diagnostik, Therapie
+HPV-assoziierte Läsionen der äußeren Genitoanalregion und des Anus – Genitalwarzen und Krebsvorstufen der Vulva, des Penis und der peri- und intraanalen Haut
+Anmelder bei der AWMF (Person):
+Dr. Markus Follmann, MPH, MSc
+für das OL-Programm von DKG, DKH und AWMF
+Anmeldende Fachgesellschaft(en):
+Deutsche Gesellschaft für Gynäkologie und Geburtshilfe e.V. (DGGG)
+(Visitenkarte)
+
+S3-Leitlinie Prävention des Zervixkarzinoms
+
+
+Version:
+1.1
+Stand:
+31.12.2017
+Gültig bis:
+30.12.2022 (in Überarbeitung)
+Aktueller Hinweis:
+31.12.2020: Gültigkeit der Leitlinie nach inhaltlicher Überprüfung durch das Leitliniensekretariat verlängert bis 30.12.2022; 26.03.2020 Langfassung ausgetauscht
+Verfügbare Dokumente:
+{"Langfassung der Leitlinie Prävention des Zervixkarzinoms": "015-027OLl_Praevention_Zervixkarzinom_2020-03-verlaengert"},{"Leitlinienreport":"015-027OLm_Praevention_Zervixkarzinom_2018-01-verlaengert"},{"Evidenzbericht": "015-027OLe1_Praevention_Zervixkarzinom_2018-01-verlaengert"}, {"Evidence Review for the S3 guideline “Prevention of Cervical Cancer”: "015-027OLe2_Praevention_Zervixkarzinom_2018-01-verlaengert"}
