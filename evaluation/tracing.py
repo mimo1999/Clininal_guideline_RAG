@@ -14,6 +14,17 @@ Fully local: LANGFUSE_HOST defaults to the self-hosted instance, never
 Langfuse's hosted cloud. If the server isn't reachable, tracing degrades to a
 no-op (auth_check() failure caught once at import time) so the eval harness
 itself never breaks because of an observability side-channel.
+
+LANGFUSE_ENABLED (read from .env, set by setup.py's y/n prompt -- see
+_set_langfuse_enabled() there) is the single global flag for whether Langfuse
+should be used AT ALL in this environment. When it's "false", this module
+skips constructing a Langfuse client and calling auth_check() entirely --
+not just catching the failure afterward, but never attempting the connection
+in the first place, so no process (webapp, run_eval, run_eval_cloud_diagnostic)
+prints a "not reachable" warning on every single run once the user has
+already said no once. When unset (e.g. a manual run that skipped setup.py),
+falls back to the original lazy-reachability-check behavior below -- still
+degrades gracefully, just without the persisted global short-circuit.
 """
 
 from __future__ import annotations
@@ -44,6 +55,12 @@ _load_dotenv(Path(__file__).parent.parent / ".env")
 for _k, _v in _DEFAULTS.items():
     os.environ.setdefault(_k, _v)
 
+# Read once at import time, not per-call -- matches how _DEFAULTS/.env are
+# already loaded above. "false" (case-insensitive) is the only value that
+# hard-disables; anything else (including unset) falls through to the
+# original per-process reachability check below.
+_GLOBALLY_DISABLED = os.environ.get("LANGFUSE_ENABLED", "").strip().lower() == "false"
+
 _client = None
 _enabled = False
 _checked = False
@@ -66,6 +83,8 @@ def _get_client():
 
 
 def enabled() -> bool:
+    if _GLOBALLY_DISABLED:
+        return False
     _get_client()
     return _enabled
 

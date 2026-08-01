@@ -1,10 +1,22 @@
 #!/usr/bin/env python3
-"""Single entrypoint to set up and run the Clinical RAG system end-to-end.
+"""One-time environment setup for the Clinical RAG system.
 
     python setup.py
 
+Run this ONCE (safe to re-run any time, e.g. after a `git pull` that changes
+requirements.txt or the corpus). It does NOT start the webapp -- for that,
+run `python run.py` every time you actually want to use the system. This
+split exists because setup involves slow, one-off work (installs, index
+restore, multi-GB model downloads) that has no reason to repeat on every
+launch, while `run.py` should be fast and repeatable.
+
 Steps, in order:
   1. Install Python dependencies (requirements.txt)              [--skip-install to skip]
+     Optionally also requirements-optional.txt (ragas + langchain-ollama,
+     needed only for evaluation/ragas_judge.py's opt-in comparison path --
+     NOT installed by default, since ragas alone drags in the full langchain
+     ecosystem, instructor, kubernetes, and the full OpenTelemetry stack)
+                                                                  [--with-ragas to include]
   2. Unzip the pre-built Chroma vector index if not already present
      (data_corpus/vector_store/chroma_db.zip -> .../chroma/)
   3. Restore the per-document chunk/router records if not already present
@@ -16,18 +28,32 @@ Steps, in order:
      chunking from data_corpus/pdf/ from scratch               [--skip-ingest to skip]
      (the BM25 sparse index builds itself automatically on first
      retrieval call -- no separate step needed)
-  4. Best-effort start Langfuse tracing (OPTIONAL -- skipped
-     cleanly, with a one-line note, if Podman/Docker or a
-     langfuse_v2 checkout aren't available; never blocks the
-     steps below)
+  4. Langfuse tracing (OPTIONAL -- the system is a hard requirement to work
+     fully without it). Prompts y/n interactively (defaults to "no" in a
+     non-interactive shell, e.g. CI or a piped invocation, rather than
+     blocking on input())                    [--langfuse / --no-langfuse to
+                                               skip the prompt either way]
+     On "no", or any failure along the way (no checkout, no Podman/Docker,
+     compose itself fails), writes LANGFUSE_ENABLED=false to .env -- the
+     single global flag evaluation/tracing.py reads to skip Langfuse
+     entirely afterward (no reachability attempts, no per-run "not
+     reachable" warnings) in every later process: webapp, run_eval,
+     run_eval_cloud_diagnostic. Never blocks the steps below either way.
   5. Only relevant if CLINICAL_RAG_GENERATOR_MODEL opts into an
-     Ollama tag (the default generator/judge are transformers
-     models that download automatically via huggingface_hub on
-     first use, same as the retrieval models -- no separate step
-     needed for those): ensures Ollama is installed (auto-installs
-     it if missing) and pulls that tag. Warns rather than aborting
-     on any failure.
-  6. Start the webapp and print the localhost URL once it's ready
+     Ollama tag (assume NOT present by default -- the default generator
+     is transformers-based and needs no Ollama at all): ensures Ollama is
+     installed (auto-installs it if missing) and pulls that tag. Warns
+     rather than aborting on any failure.
+  6. Pre-download every local model's weights (retrieval embedder +
+     reranker + dedup model, and -- unless CLINICAL_RAG_GENERATOR_MODEL
+     opts into Ollama -- the transformers generator; the judge is
+     always transformers regardless of that env var) into the
+     huggingface_hub cache. This is a plain download (snapshot_download,
+     no GPU/CPU load, no model instantiation) so it works headless and
+     costs no VRAM -- its only purpose is making `run.py` fast and
+     network-free on every subsequent launch instead of downloading
+     multi-GB weights the first time someone opens the chat UI.
+                                                            [--skip-models to skip]
 
 Re-running this script is safe and cheap: each step checks whether its
 output already exists before doing any real work.
@@ -42,7 +68,6 @@ import subprocess
 import sys
 import tempfile
 import time
-import urllib.error
 import urllib.request
 import zipfile
 from pathlib import Path
@@ -53,7 +78,6 @@ CHROMA_ZIP = REPO_ROOT / "data_corpus" / "vector_store" / "chroma_db.zip"
 PDF_DIR = REPO_ROOT / "data_corpus" / "pdf"
 PROCESSED_DIR = REPO_ROOT / "data_corpus" / "processed"
 PROCESSED_ZIP = REPO_ROOT / "data_corpus" / "processed.zip"
-WEBAPP_URL = "http://127.0.0.1:8080"
 OLLAMA_TAGS_URL = "http://127.0.0.1:11434/api/tags"
 # Only relevant if CLINICAL_RAG_GENERATOR_MODEL opts into an Ollama tag --
 # the default generator/judge (generation/llm.py's GENERATOR_MODEL_NAME /
@@ -76,7 +100,7 @@ def _run(args: list[str]) -> int:
     return subprocess.run(args, cwd=REPO_ROOT).returncode
 
 
-def step_install(skip: bool) -> None:
+def step_install(skip: bool, with_ragas: bool) -> None:
     _step("1) Python dependencies")
     if skip:
         print("Skipped (--skip-install).")
@@ -85,6 +109,17 @@ def step_install(skip: bool) -> None:
     if rc != 0:
         print(f"WARNING: pip install exited with code {rc} -- continuing anyway; "
               f"some steps below may fail if a required package is missing.")
+
+    if with_ragas:
+        # requirements-optional.txt: ragas + langchain-ollama, only needed
+        # for evaluation/ragas_judge.py's opt-in comparison path -- NOT
+        # installed by default because ragas alone drags in the full
+        # langchain ecosystem, instructor, kubernetes, and the full
+        # OpenTelemetry stack (dev_logs.md Entry 26).
+        rc = _run([sys.executable, "-m", "pip", "install", "-r", "requirements-optional.txt"])
+        if rc != 0:
+            print(f"WARNING: optional-deps install exited with code {rc} -- "
+                  f"evaluation/ragas_judge.py will fail until it's installed successfully.")
 
     # This project never uses audio, but some environments (Google Colab)
     # ship a preinstalled torchaudio -- if it's CUDA-mismatched against
@@ -167,13 +202,54 @@ def step_ingest_and_chunk(skip: bool) -> None:
         print(f"WARNING: chunking exited with code {rc}.")
 
 
-def step_langfuse(langfuse_dir: Path | None) -> None:
+ENV_PATH = REPO_ROOT / ".env"
+
+
+def _set_langfuse_enabled(value: bool) -> None:
+    """Persists the y/n decision (or any auto-detected failure) to .env as
+    LANGFUSE_ENABLED=true/false -- the single global source of truth
+    evaluation/tracing.py reads (see its LANGFUSE_ENABLED check) so that
+    EVERY later process (webapp, run_eval, run_eval_cloud_diagnostic) skips
+    Langfuse entirely when it's false, rather than each one independently
+    re-attempting a connection and printing its own "not reachable" warning
+    on every single run. .env is already gitignored (holds real API keys),
+    so this is local-only state, never committed."""
+    lines = ENV_PATH.read_text(encoding="utf-8").splitlines() if ENV_PATH.exists() else []
+    lines = [ln for ln in lines if not ln.strip().startswith("LANGFUSE_ENABLED=")]
+    lines.append(f"LANGFUSE_ENABLED={'true' if value else 'false'}")
+    ENV_PATH.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def step_langfuse(langfuse_dir: Path | None, langfuse_choice: str | None) -> None:
     _step("4) Langfuse tracing (optional)")
+
+    # langfuse_choice comes from --langfuse/--no-langfuse; None means neither
+    # flag was passed, so ask interactively. The system must work with NO
+    # Langfuse at all (a hard requirement, not just a nice-to-have), so a
+    # non-interactive shell (stdin not a TTY -- the common case for a CI run,
+    # a piped/redirected invocation, or some notebook cell-execution setups)
+    # defaults to "no" rather than blocking forever on input().
+    if langfuse_choice is None:
+        if sys.stdin.isatty():
+            answer = input("Set up Langfuse tracing? [y/N]: ").strip().lower()
+            langfuse_choice = "yes" if answer in ("y", "yes") else "no"
+        else:
+            print("Non-interactive shell -- defaulting to no Langfuse "
+                  "(pass --langfuse or --no-langfuse to set this explicitly).")
+            langfuse_choice = "no"
+
+    if langfuse_choice == "no":
+        print("Skipping Langfuse. Tracing will be fully disabled for the webapp and eval runs "
+              "(no reachability attempts, no per-run warnings) until you re-run setup.py and opt in.")
+        _set_langfuse_enabled(False)
+        return
+
     candidate = langfuse_dir or (REPO_ROOT.parent / "langfuse_v2")
     if not (candidate / "docker-compose.yml").exists():
         print(f"No Langfuse checkout found at {candidate} -- skipping tracing. "
               f"(Optional: clone https://github.com/langfuse/langfuse there, or pass "
               f"--langfuse-dir, to enable it. The webapp works fine without it.)")
+        _set_langfuse_enabled(False)
         return
 
     compose_cmd = None
@@ -184,6 +260,7 @@ def step_langfuse(langfuse_dir: Path | None) -> None:
     if compose_cmd is None:
         print("No podman-compose/docker-compose/docker found on PATH -- skipping tracing. "
               "(Optional: install Podman or Docker to enable it.)")
+        _set_langfuse_enabled(False)
         return
 
     print(f"Starting Langfuse via {' '.join(compose_cmd)} in {candidate} ...")
@@ -191,14 +268,17 @@ def step_langfuse(langfuse_dir: Path | None) -> None:
         rc = subprocess.run(compose_cmd + ["up", "-d"], cwd=candidate, timeout=120).returncode
         if rc == 0:
             print("Langfuse started -- traces will appear at http://localhost:3000")
+            _set_langfuse_enabled(True)
         else:
             print(f"WARNING: Langfuse compose exited with code {rc} -- continuing without tracing.")
+            _set_langfuse_enabled(False)
     except Exception as e:
         # Langfuse is explicitly optional -- any failure here (missing
         # binary, compose file error, timeout, permissions) must never block
         # the steps below, which is why this is caught broadly rather than
         # narrowed to a specific exception type.
         print(f"WARNING: could not start Langfuse ({type(e).__name__}: {e}) -- continuing without tracing.")
+        _set_langfuse_enabled(False)
 
 
 def _ollama_tags() -> list[str] | None:
@@ -278,8 +358,7 @@ def step_ensure_ollama() -> None:
     if not OLLAMA_GENERATOR_MODEL:
         print("CLINICAL_RAG_GENERATOR_MODEL isn't set -- using the default transformers "
               "generator/judge (generation/llm.py), which need no Ollama at all. Skipping. "
-              "(Their weights download automatically via huggingface_hub the first time the "
-              "webapp actually generates/judges something, same as the retrieval models.)")
+              "(Their weights are pre-downloaded in step 6 below.)")
         return
 
     tags = _ollama_tags()
@@ -302,40 +381,44 @@ def step_ensure_ollama() -> None:
               f"generation will fail until it's pulled successfully.")
 
 
-def step_start_webapp() -> None:
-    _step("6) Starting the webapp")
-    proc = subprocess.Popen([sys.executable, "-m", "webapp.run_webapp"], cwd=REPO_ROOT)
+def step_download_models(skip: bool) -> None:
+    _step("6) Pre-downloading model weights")
+    if skip:
+        print("Skipped (--skip-models). Weights will download lazily the first time run.py "
+              "actually needs them instead.")
+        return
 
-    print(f"Waiting for {WEBAPP_URL} to come up (this includes a model warm-up query, "
-          f"can take a minute)...")
-    ready = False
-    for _ in range(60):
-        if proc.poll() is not None:
-            print(f"\nWebapp process exited early (code {proc.returncode}) -- see output above.")
-            return
+    # Plain snapshot_download, not model instantiation (no from_pretrained(),
+    # no .load()) -- this step's only job is populating the huggingface_hub
+    # cache so run.py never blocks on a multi-GB download later. Doing it via
+    # a real model load would pull in GPU/CPU placement, dtype casting, and
+    # VRAM pressure that have nothing to do with "is the file on disk yet."
+    from huggingface_hub import snapshot_download
+
+    from generation import llm as gen_llm
+    from retrieval import embed as retrieval_embed
+    from retrieval import rerank as retrieval_rerank
+
+    model_ids = [
+        retrieval_embed.MODEL_NAME,
+        os.environ.get("DEDUP_MODEL_NAME", retrieval_embed.DEDUP_MODEL_NAME_DEFAULT),
+        os.environ.get("RERANK_MODEL_NAME", retrieval_rerank.DEFAULT_MODEL_NAME),
+        # The judge is always the transformers model regardless of
+        # CLINICAL_RAG_GENERATOR_MODEL -- that env var only swaps the
+        # generator to Ollama (see generation/llm.py, webapp/main.py); the
+        # judge (evaluation/judge.py) has no Ollama path.
+        gen_llm.JUDGE_MODEL_NAME,
+    ]
+    if not OLLAMA_GENERATOR_MODEL:
+        model_ids.append(gen_llm.GENERATOR_MODEL_NAME)
+
+    for model_id in model_ids:
+        print(f"Downloading {model_id} (skips files already cached)...")
         try:
-            urllib.request.urlopen(WEBAPP_URL, timeout=2)
-            ready = True
-            break
-        except (urllib.error.URLError, ConnectionError, OSError):
-            time.sleep(2)
-
-    if ready:
-        print(f"\nReady -- open {WEBAPP_URL} in your browser.\n(Ctrl+C here stops the server.)")
-    else:
-        print(f"\nWARNING: {WEBAPP_URL} didn't respond within the timeout -- it may still be "
-              f"starting up (check the log output above). It's still running; try the URL "
-              f"in a browser directly.")
-
-    try:
-        proc.wait()
-    except KeyboardInterrupt:
-        print("\nStopping...")
-        proc.terminate()
-        try:
-            proc.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            proc.kill()
+            snapshot_download(repo_id=model_id)
+        except Exception as e:
+            print(f"WARNING: failed to pre-download {model_id} ({type(e).__name__}: {e}) -- "
+                  f"it will be downloaded lazily on first use instead.")
 
 
 def main() -> None:
@@ -348,15 +431,25 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--skip-install", action="store_true", help="Skip pip install -r requirements.txt")
     parser.add_argument("--skip-ingest", action="store_true", help="Skip ingestion/chunking even if data_corpus/processed/ is empty")
+    parser.add_argument("--skip-models", action="store_true", help="Skip pre-downloading model weights (they'll download lazily on first use in run.py instead)")
+    parser.add_argument("--with-ragas", action="store_true", help="Also install requirements-optional.txt (ragas + langchain-ollama), needed only for evaluation/ragas_judge.py's opt-in comparison path")
     parser.add_argument("--langfuse-dir", type=Path, default=None, help="Path to a langfuse_v2 checkout (default: ../langfuse_v2 relative to this repo)")
+    langfuse_group = parser.add_mutually_exclusive_group()
+    langfuse_group.add_argument("--langfuse", dest="langfuse_choice", action="store_const", const="yes", help="Set up Langfuse without prompting")
+    langfuse_group.add_argument("--no-langfuse", dest="langfuse_choice", action="store_const", const="no", help="Skip Langfuse without prompting")
+    parser.set_defaults(langfuse_choice=None)
     args = parser.parse_args()
 
-    step_install(args.skip_install)
+    step_install(args.skip_install, args.with_ragas)
     step_unzip_chroma()
     step_ingest_and_chunk(args.skip_ingest)
-    step_langfuse(args.langfuse_dir)
+    step_langfuse(args.langfuse_dir, args.langfuse_choice)
     step_ensure_ollama()
-    step_start_webapp()
+    step_download_models(args.skip_models)
+
+    print(f"\n{'=' * 60}\nSetup complete.\n{'=' * 60}\nRun `python run.py` to start the webapp "
+          f"(and every time after this -- setup itself only needs to run once, or again after "
+          f"a `git pull` that changes requirements/corpus).")
 
 
 if __name__ == "__main__":

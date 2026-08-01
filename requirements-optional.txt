@@ -1,0 +1,15 @@
+# Optional extras, NOT installed by `setup.py`/requirements.txt by default.
+# Only needed for evaluation/ragas_judge.py, an opt-in comparison judge
+# against ragas -- the default eval (evaluation/run_eval.py) never imports
+# this. Install explicitly if you want that path:
+#
+#   pip install -r requirements-optional.txt
+#
+# Pulled in for the size of what it drags along, not what it does itself:
+# ragas alone brings the full langchain ecosystem (langchain-core,
+# langchain-classic, langchain-community, langchain_openai,
+# langchain-text-splitters), instructor, kubernetes, and the complete
+# OpenTelemetry SDK/exporter/proto stack -- dozens of transitive packages,
+# confirmed directly from a real install log (dev_logs.md Entry 26).
+ragas==0.4.3
+langchain-ollama==1.1.0

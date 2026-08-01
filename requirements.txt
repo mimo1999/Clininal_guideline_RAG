@@ -7,10 +7,23 @@
 # specifically. See dev_logs.md for the full history of why each
 # model/library choice was made.
 #
-# torch: pinned version below installs a CPU-only build on most platforms.
-# If you have an NVIDIA GPU, install the matching CUDA build instead from
-# https://pytorch.org/get-started/locally/, e.g.
-# `pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cu126`
+# torch: deliberately a MINIMUM-version bound (>=), not an exact pin like
+# everything else in this file -- confirmed the difference matters. An exact
+# `torch==2.13.0` pin forces pip to uninstall-and-replace an already-working
+# preinstalled torch on environments that ship one (e.g. Google Colab, which
+# has 2.11.0 matched to a CUDA 12.8 toolkit + torchvision + RAPIDS stack). That
+# replacement cascades hard: pip pulled in 14 new nvidia-* CUDA-13 packages
+# plus a fresh cuda-toolkit and triton build, and broke pip's own reported
+# compatibility with Colab's preinstalled cuml-cu12/cudf-cu12/libcuvs-cu12/
+# libcuml-cu12/libraft-cu12 (RAPIDS, all CUDA-12-specific) and google-adk --
+# real, disruptive churn for zero benefit to this project, which only needs
+# *a* working CUDA build, not specifically CUDA 13. With `>=`, pip leaves an
+# already-sufficient preinstalled torch alone and only installs fresh on a
+# machine that has none (or too old a version) -- on a CPU-only or fresh
+# machine this still resolves to the latest available build, same as before.
+# If you have an NVIDIA GPU and no torch preinstalled, get the matching CUDA
+# build from https://pytorch.org/get-started/locally/, e.g.
+# `pip install torch --index-url https://download.pytorch.org/whl/cu126`
 # -- the retrieval/generation code auto-detects CUDA and falls back to CPU
 # cleanly either way (slower, not broken).
 #
@@ -29,7 +42,7 @@
 # to fix this by pinning a matching torchaudio version instead of removing it
 # turned out to be both unnecessary and unworkable -- no torchaudio release
 # exists for torch==2.13.0 at all (latest available was 2.11.0).
-torch==2.13.0
+torch>=2.11.0
 
 transformers==5.14.1
 sentence-transformers==5.6.1
@@ -56,9 +69,15 @@ lingua-language-detector==2.1.1
 beautifulsoup4==4.15.0
 lxml==6.1.1
 
-# Evaluation / tracing (all optional at runtime -- tracing.py degrades to a
-# no-op if Langfuse isn't reachable; ragas is only used by the opt-in
-# --compare-ragas eval path)
+# Evaluation / tracing (optional at runtime -- tracing.py degrades to a
+# no-op if Langfuse isn't reachable)
 langfuse==2.60.10
-ragas==0.4.3
-langchain-ollama==1.1.0
+
+# ragas + langchain-ollama (evaluation/ragas_judge.py, an opt-in comparison
+# path -- NOT the default eval, see evaluation/run_eval.py) are NOT installed
+# by default: `ragas` alone drags in the full langchain ecosystem
+# (langchain-core, langchain-classic, langchain-community, langchain_openai,
+# langchain-text-splitters), `instructor`, `kubernetes`, and the full
+# OpenTelemetry SDK/exporter/proto stack -- dozens of transitive packages,
+# confirmed directly from a real `pip install -r requirements.txt` log, for a
+# path most runs never touch. See requirements-optional.txt to opt in.
