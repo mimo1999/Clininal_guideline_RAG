@@ -18,14 +18,16 @@ import re
 from dataclasses import dataclass
 from functools import lru_cache
 
+from common.config import (
+    HARD_CAP_TOKENS,
+    MERGE_THRESHOLD_TOKENS,
+    OVERLAP_RATIO,
+    TARGET_MAX_TOKENS,
+    TARGET_MIN_TOKENS,
+)
+
 from .structure import Section
 from .tables import extract_tables
-
-TARGET_MIN_TOKENS = 300
-TARGET_MAX_TOKENS = 500
-HARD_CAP_TOKENS = 600
-OVERLAP_RATIO = 0.15
-MERGE_THRESHOLD_TOKENS = 100
 
 PARAGRAPH_SPLIT_RE = re.compile(r"\n\s*\n")
 HEADING_LINE_RE = re.compile(r"^## .+$\n?", re.MULTILINE)
@@ -41,7 +43,18 @@ class TextPiece:
 @lru_cache(maxsize=1)
 def _tokenizer():
     from transformers import AutoTokenizer
-    return AutoTokenizer.from_pretrained("BAAI/bge-m3")
+
+    # Must be the ACTUAL embedding model's tokenizer, not just a "comparable"
+    # one: retrieval/embed.py hard-truncates every text to MAX_SEQ_LENGTH
+    # (512) tokens in granite's own tokenization at embed time. If this
+    # module counted tokens with a different tokenizer, a chunk this module
+    # sizes at e.g. 480 "tokens" could tokenize to >512 under granite's own
+    # vocab/subword splits -- silently truncated on embedding, losing
+    # content the chunk boundary was supposed to preserve. Importing
+    # MODEL_NAME (not hardcoding the string here too) keeps this correct by
+    # construction if the embedding model is ever swapped again.
+    from retrieval.embed import MODEL_NAME
+    return AutoTokenizer.from_pretrained(MODEL_NAME)
 
 
 def count_tokens(text: str) -> int:

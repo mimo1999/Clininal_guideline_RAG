@@ -27,7 +27,13 @@ DOC_TYPE_MODULES = {
     "english": english,
 }
 
-_SUFFIX_RE = re.compile(r"OL([a-zA-Z]+\d*)_", re.IGNORECASE)
+# "OL" is optional -- confirmed a real gap: 015-059 and 032-042 (S2k-level
+# guidelines, not part of the OL-Programm) have no "OL" in their register
+# number at all (filenames like "015-059l_...", not "015-059OLl_..."), so
+# the earlier OL-required pattern returned no suffix at all for them. Mirrors
+# build_document.py's own _FILENAME_REGNR_RE, which already treats "OL" as
+# optional for the register number itself.
+_SUFFIX_RE = re.compile(r"\d{3}-\d{3}(?:OL)?([a-zA-Z]+\d*)_", re.IGNORECASE)
 
 # Exact filename-suffix -> doc_type, checked case-insensitively before any
 # prefix heuristic (order matters: "ki" must be checked as its own entry, not
@@ -98,6 +104,14 @@ def detect_doc_type(filename: str) -> str:
         return "methodenreport"
     if suffix.startswith("e"):
         return "english"
+    # AWMF uses "p1"/"p2"/... for a multi-part Patientenleitlinie (not just
+    # bare "p", already in _KNOWN_SUFFIXES) -- confirmed a real, current gap:
+    # 032-055OL's own sidecar has a malformed/truncated filename for its
+    # Patientenleitlinie entry (a line-wrap artifact from the AWMF page
+    # scrape), so the sidecar-label match fails for that PDF and this
+    # filename-suffix fallback is what actually has to resolve it correctly.
+    if suffix.startswith("p"):
+        return "patientenversion"
     return "unknown"
 
 

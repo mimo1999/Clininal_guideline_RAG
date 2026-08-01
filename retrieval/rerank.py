@@ -9,6 +9,8 @@ from __future__ import annotations
 import os
 from functools import lru_cache
 
+from common.config import RERANK_MAX_LENGTH, RERANK_MODEL_NAME_DEFAULT
+
 # RERANK_MAX_LENGTH below was tuned against bge-reranker-v2-m3's 8192-token
 # native context (see that constant's own comment); mmarco-mMiniLMv2-L12 was
 # trained at 512 tokens natively, so the cap is now a no-op ceiling rather
@@ -30,7 +32,7 @@ from functools import lru_cache
 # THRESHOLD was calibrated against bge-reranker-v2-m3's specific score
 # distribution and doesn't transfer to every model's score range. Any future
 # reranker swap must re-verify trap_refusal_rate, not just recall/NDCG.
-DEFAULT_MODEL_NAME = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
+DEFAULT_MODEL_NAME = RERANK_MODEL_NAME_DEFAULT
 # bge-reranker-v2-m3 supports up to 8192 tokens by default -- with no cap,
 # a single long candidate (table chunks especially can run 500-900+ tokens,
 # confirmed directly against real retrieved candidates) forces the WHOLE
@@ -43,7 +45,7 @@ DEFAULT_MODEL_NAME = "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"
 # reranking only decides ORDER, so truncating the tail of an outlier-long
 # candidate for scoring purposes doesn't affect what's actually shown to the
 # user or sent to the generator afterward -- that still uses the full text.
-RERANK_MAX_LENGTH = 512
+# (RERANK_MAX_LENGTH itself imported from common.config above.)
 
 
 @lru_cache(maxsize=2)

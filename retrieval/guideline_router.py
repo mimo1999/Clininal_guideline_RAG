@@ -30,6 +30,8 @@ from pathlib import Path
 
 import numpy as np
 
+from common.config import GUIDELINE_ABSOLUTE_THRESHOLD, GUIDELINE_RELATIVE_MARGIN, GUIDELINE_ROUTER_WEIGHTS
+
 from .embed import EMBED_DIM, embed_query, embed_texts
 
 PROCESSED_DIR = Path(__file__).parent.parent / "data_corpus" / "processed"
@@ -37,7 +39,7 @@ PROCESSED_DIR = Path(__file__).parent.parent / "data_corpus" / "processed"
 # Section-titles summary weighted highest -- most specific/content-dense
 # signal. Title and purpose lower but still contribute (a query may match
 # the guideline's stated purpose without matching any single section title).
-WEIGHTS = {"title": 0.2, "purpose": 0.2, "summary": 0.6}
+WEIGHTS = GUIDELINE_ROUTER_WEIGHTS
 
 # Candidate guidelines are selected using a similarity threshold with a
 # relative margin to the highest-scoring guideline. This avoids fixed top-k
@@ -57,8 +59,8 @@ WEIGHTS = {"title": 0.2, "purpose": 0.2, "summary": 0.6}
 # refusal_correctness_rate=1.0 on the full evaluation run -- see Entry 5) is
 # kept rather than traded for a nice-to-have earlier refusal on 2 of 3 traps
 # that are already caught correctly one layer downstream regardless.
-ABSOLUTE_THRESHOLD = 0.35
-RELATIVE_MARGIN = 0.08
+ABSOLUTE_THRESHOLD = GUIDELINE_ABSOLUTE_THRESHOLD
+RELATIVE_MARGIN = GUIDELINE_RELATIVE_MARGIN
 
 _route_cache: dict[str, tuple[bool, list["GuidelineCandidate"]]] = {}
 

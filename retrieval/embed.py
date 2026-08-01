@@ -8,6 +8,8 @@ from functools import lru_cache
 
 import numpy as np
 
+from common.config import DEDUP_MODEL_NAME_DEFAULT, EMBED_MAX_SEQ_LENGTH, EMBED_MODEL_NAME
+
 # Switched from BAAI/bge-m3 (567M params, 1024-dim, 8192-token context) to
 # this smaller (278M params, 768-dim, 512-token-capped) model after a live
 # silver-question comparison (dev_logs.md Entry 10): granite matched bge-m3
@@ -20,22 +22,24 @@ import numpy as np
 # losing coverage. Requires a full corpus re-index (embedding dimension
 # changed 1024 -> 768, and the vector space itself is different) -- the prior
 # bge-m3 Chroma collection is preserved at
-# data_corpus/vector_store/chroma_bge-m3_backup for rollback.
-MODEL_NAME = "ibm-granite/granite-embedding-278m-multilingual"
+# data_corpus/vector_store/chroma_bge-m3_backup for rollback. Value itself
+# lives in common/config.py now (not freely swappable via env var like the
+# other config.py entries -- see that module's comment on EMBED_MODEL_NAME).
+MODEL_NAME = EMBED_MODEL_NAME
 EMBED_DIM = 768
 # Corpus token-length check (dev_logs.md) found p99=593, max=1224 out of
 # 5,833 chunks under bge-m3's tokenizer -- granite's is comparable. Capping
 # avoids the same whole-batch-padding trap already fixed for the reranker
 # (rerank.py's RERANK_MAX_LENGTH) and dedup (embed_texts_for_dedup below).
-MAX_SEQ_LENGTH = 512
+MAX_SEQ_LENGTH = EMBED_MAX_SEQ_LENGTH
 # Dedup's near-duplicate check (hybrid_search.py's _dedup_by_source_priority)
 # is a symmetric, ad-hoc similarity check over a small (~15) candidate window
 # -- it never needs to share an embedding space with the persisted Chroma
 # index, unlike embed_texts()/embed_query() below. That means it can use a
 # DIFFERENT, lighter model with zero re-index cost, unlike swapping
 # MODEL_NAME itself (which would require re-embedding the whole corpus).
-# Overridable for A/B testing; not switched by default until verified.
-DEDUP_MODEL_NAME_DEFAULT = "intfloat/multilingual-e5-small"
+# Overridable for A/B testing (DEDUP_MODEL_NAME env var, read per-call in
+# embed_texts_for_dedup() below); default value lives in common/config.py.
 
 
 @lru_cache(maxsize=1)

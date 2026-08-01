@@ -1,4 +1,4 @@
-"""Silver-dataset validation pass -- runs evaluation/silver_questions.py's 18
+"""Silver-dataset validation pass -- runs evaluation/silver_questions.py's 12
 self-generated questions through the SAME retrieval + cloud-model generation
 + judging pipeline as run_eval_cloud_diagnostic.py, but is entirely separate
 from it: own result files (eval_results_silver.md / _full.json), own Langfuse
@@ -22,11 +22,17 @@ Known limitation, not fixed here: the judge prompt (evaluation/judge.py's
 JUDGE_SYSTEM_PROMPT, and _judge()'s user-message template in
 run_eval_cloud_diagnostic.py) is still German-only -- it was never in scope
 for the generator-prompt bilingual fix (dev_logs.md Entry 5 Section 8). So
-category B/en_en and C/de_en questions get judged by a German-instructed
-judge evaluating English-language answers/references. Flagged here rather
-than silently assumed fine, since it's a plausible confound if category B/C
+category B/de_en questions get judged by a German-instructed judge
+evaluating English-language answers/references. Flagged here rather than
+silently assumed fine, since it's a plausible confound if category B
 accuracy looks worse than category A for reasons unrelated to retrieval or
 generation quality.
+
+A third category, "en_en" (English source content, English query), existed
+here previously but was removed along with its underlying source document
+(032-033OL's English translation, deleted -- see silver_questions.py's own
+docstring and dev_logs.md). No English-language source content remains in
+the corpus for that category to be grounded in.
 """
 
 from __future__ import annotations
@@ -48,8 +54,7 @@ RESULTS_MD_PATH = RESULTS_DIR / "eval_results_silver.md"
 
 CATEGORY_LABELS = {
     "de_de": "A: German source / German query",
-    "en_en": "B: English source / English query",
-    "de_en": "C: German source / English query (cross-lingual)",
+    "de_en": "B: German source / English query (cross-lingual)",
 }
 
 

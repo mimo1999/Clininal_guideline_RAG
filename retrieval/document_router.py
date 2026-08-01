@@ -21,12 +21,14 @@ from pathlib import Path
 
 import numpy as np
 
+from common.config import DOCUMENT_ABSOLUTE_THRESHOLD, DOCUMENT_RELATIVE_MARGIN
+
 from .embed import EMBED_DIM, embed_query, embed_texts
 
 PROCESSED_DIR = Path(__file__).parent.parent / "data_corpus" / "processed"
 
-ABSOLUTE_THRESHOLD = 0.3
-RELATIVE_MARGIN = 0.1
+ABSOLUTE_THRESHOLD = DOCUMENT_ABSOLUTE_THRESHOLD
+RELATIVE_MARGIN = DOCUMENT_RELATIVE_MARGIN
 
 
 @dataclass

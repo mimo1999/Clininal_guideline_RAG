@@ -19,6 +19,17 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from common.config import (
+    DEDUP_SIMILARITY_THRESHOLD,
+    DENSE_TOP_K,
+    FUSED_TOP_K,
+    LANGUAGE_BONUS,
+    RERANK_CONFIDENCE_THRESHOLD,
+    RERANK_DIAGNOSTIC_K,
+    RERANK_TOP_K,
+    RRF_K,
+    SPARSE_TOP_K,
+)
 from ingestion.langid import detect_language
 
 from . import document_router, guideline_router
@@ -26,57 +37,63 @@ from .embed import embed_query, embed_texts_for_dedup
 from .index_store import _tokenize, build_indexes
 from .rerank import rerank as cross_encoder_rerank
 
-RRF_K = 60
-# Widened from 20 -- confirmed too narrow via a real miss: Q3's expected
-# section (10.6) never appeared anywhere in a 20-candidate dense+sparse fetch
-# against the 5,833-chunk corpus (~0.34% of it), so no amount of reranking
-# could have surfaced it -- the candidate was never in the pool to begin with.
-# A cross-encoder reranker is specifically good at picking the true best out
-# of a wide, noisy net; a narrow initial fetch defeats that. ~3x the final
-# generator count (RERANK_TOP_K) is the target ratio.
-DENSE_TOP_K = 40
-SPARSE_TOP_K = 40
-# Narrowed from 40 -> 25 after the granite-embedding-278m-multilingual swap
-# (see embed.py's MODEL_NAME comment / dev_logs.md Entry 10): a live
-# fused+rerank funnel test against all 18 silver questions, using the REAL
-# BM25 index and the REAL reranker, found the worst-case fused rank was 18
-# (bge-m3 previously had a total miss at this stage, plus a rank-20
+# All tunables below now live in common/config.py (env-var overridable) --
+# comments here are the "why", left in place next to where they're used.
+#
+# RRF_K = 60.
+#
+# DENSE_TOP_K = SPARSE_TOP_K = 40. Widened from 20 -- confirmed too narrow via
+# a real miss: Q3's expected section (10.6) never appeared anywhere in a
+# 20-candidate dense+sparse fetch against the 5,833-chunk corpus (~0.34% of
+# it), so no amount of reranking could have surfaced it -- the candidate was
+# never in the pool to begin with. A cross-encoder reranker is specifically
+# good at picking the true best out of a wide, noisy net; a narrow initial
+# fetch defeats that. ~3x the final generator count (RERANK_TOP_K) is the
+# target ratio.
+#
+# FUSED_TOP_K = 25. Narrowed from 40 after the granite-embedding-278m-
+# multilingual swap (see embed.py's MODEL_NAME comment / dev_logs.md Entry
+# 10): a live fused+rerank funnel test against all 18 silver questions, using
+# the REAL BM25 index and the REAL reranker, found the worst-case fused rank
+# was 18 (bge-m3 previously had a total miss at this stage, plus a rank-20
 # straggler) -- 25 keeps a real safety margin over that observed max on a
 # 30-question sample, not a value tuned to exactly match it.
-FUSED_TOP_K = 25
-# Narrowed from 10 -> 8 alongside the same granite swap -- the funnel test's
-# post-rerank ranks for previously-hard cross-lingual questions all landed at
-# 1-4, so the extra headroom the wider window was compensating for isn't
-# needed as urgently; still deduped (see DEDUP_SIMILARITY_THRESHOLD below).
-RERANK_TOP_K = 8
-# The cross-encoder actually reranks this many candidates (used for the
-# Recall@10/NDCG@10 evaluation metrics AND as the pre-dedup pool RERANK_TOP_K
-# is drawn from -- must stay >= RERANK_TOP_K plus some slack for whatever
-# dedup prunes); only the first RERANK_TOP_K of the resulting order are kept
-# in `chunks` and fed to the generator.
-RERANK_DIAGNOSTIC_K = 15
-# Provisional, set from a handful of manual probes (see dev_logs.md) -- the
-# cross-encoder's top score after reranking is what actually separates
-# in-domain from out-of-domain queries cleanly (traps scored ~0.001-0.03 vs
-# 0.85-0.99 for real answers), tighter than either router's own threshold.
-RERANK_CONFIDENCE_THRESHOLD = 0.1
-# Single retrieval pass, not a hard language filter -- a chunk in the query's
-# detected language gets a flat score bump at rerank time so it wins ties
-# against an equally-relevant chunk in another language, but a dramatically
-# better cross-language match can still outrank it.
-LANGUAGE_BONUS = 0.15
-# Two chunks whose own dense embeddings cosine-similarity clears this are
-# treated as near-duplicate restatements of the same fact (e.g. a Langfassung
-# passage and its near-identical Kurzfassung counterpart, or a translated
-# passage restating the same fact in another language). Language match is
-# checked first: a same-query-language duplicate is always kept over a
-# cross-language one, even if the cross-language copy has higher source
-# authority -- the language bonus already pushed same-language matches ahead
-# at rerank time, and letting dedup silently override that with an authority
-# tie-break (the previous behavior) undermined it whenever a higher-authority
-# document happened to also be in the "wrong" language. Only when both
-# candidates agree on language-match status does source_priority arbitrate.
-DEDUP_SIMILARITY_THRESHOLD = 0.92
+#
+# RERANK_TOP_K = 8. Narrowed from 10 alongside the same granite swap -- the
+# funnel test's post-rerank ranks for previously-hard cross-lingual questions
+# all landed at 1-4, so the extra headroom the wider window was compensating
+# for isn't needed as urgently; still deduped (see DEDUP_SIMILARITY_THRESHOLD
+# below).
+#
+# RERANK_DIAGNOSTIC_K = 15. The cross-encoder actually reranks this many
+# candidates (used for the Recall@10/NDCG@10 evaluation metrics AND as the
+# pre-dedup pool RERANK_TOP_K is drawn from -- must stay >= RERANK_TOP_K plus
+# some slack for whatever dedup prunes); only the first RERANK_TOP_K of the
+# resulting order are kept in `chunks` and fed to the generator.
+#
+# RERANK_CONFIDENCE_THRESHOLD = 0.1. Provisional, set from a handful of
+# manual probes (see dev_logs.md) -- the cross-encoder's top score after
+# reranking is what actually separates in-domain from out-of-domain queries
+# cleanly (traps scored ~0.001-0.03 vs 0.85-0.99 for real answers), tighter
+# than either router's own threshold.
+#
+# LANGUAGE_BONUS = 0.15. Single retrieval pass, not a hard language filter --
+# a chunk in the query's detected language gets a flat score bump at rerank
+# time so it wins ties against an equally-relevant chunk in another language,
+# but a dramatically better cross-language match can still outrank it.
+#
+# DEDUP_SIMILARITY_THRESHOLD = 0.92. Two chunks whose own dense embeddings
+# cosine-similarity clears this are treated as near-duplicate restatements of
+# the same fact (e.g. a Langfassung passage and its near-identical
+# Kurzfassung counterpart, or a translated passage restating the same fact in
+# another language). Language match is checked first: a same-query-language
+# duplicate is always kept over a cross-language one, even if the
+# cross-language copy has higher source authority -- the language bonus
+# already pushed same-language matches ahead at rerank time, and letting
+# dedup silently override that with an authority tie-break (the previous
+# behavior) undermined it whenever a higher-authority document happened to
+# also be in the "wrong" language. Only when both candidates agree on
+# language-match status does source_priority arbitrate.
 
 
 def _release_gpu_memory() -> None:
@@ -224,7 +241,14 @@ class HybridSearcher:
                     seen.add(nid)
         return expanded
 
-    def search(self, query: str, top_k: int = RERANK_TOP_K) -> SearchResult:
+    def search(self, query: str, top_k: int = RERANK_TOP_K, doc_type_filter: str | None = None) -> SearchResult:
+        """doc_type_filter, if given, bypasses document_router.route() and
+        forces retrieval to only chunks of that doc_type (e.g. "langfassung")
+        within the routed guideline(s) -- an ablation knob for testing "what
+        if we only ever searched the Langfassung", not part of the normal
+        query path (default None preserves the usual document-router
+        behavior exactly). Reuses whatever index is already built; doesn't
+        touch chunks/embeddings."""
         timings: dict[str, float] = {}
         t0 = time.perf_counter()
 
@@ -241,7 +265,18 @@ class HybridSearcher:
         allowed_ids: set[str] | None = None
 
         t1 = time.perf_counter()
-        if guideline_ids:
+        if doc_type_filter is not None:
+            doc_ids = sorted({
+                c.get("doc_id") for c in self.chunks.values()
+                if c.get("guideline_id") in guideline_ids and c.get("doc_type") == doc_type_filter
+            })
+            if doc_ids:
+                where = {"doc_id": {"$in": doc_ids}}
+                allowed_ids = {cid for cid, c in self.chunks.items() if c.get("doc_id") in doc_ids}
+            else:
+                where = {"guideline_id": {"$in": guideline_ids}}
+                allowed_ids = {cid for cid, c in self.chunks.items() if c.get("guideline_id") in guideline_ids}
+        elif guideline_ids:
             doc_candidates = document_router.route(query, guideline_ids)
             doc_ids = [c.doc_id for c in doc_candidates]
             if doc_ids:

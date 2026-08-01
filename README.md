@@ -56,6 +56,7 @@ Both are incremental by default — already-ingested PDFs are tracked by content
 
 ## Repository layout
 
+- `common/config.py` — every retrieval/chunking hyperparameter (RRF_K, top-k values, thresholds, model names, chunk sizing) in one place, env-var overridable for sweeps/A-B tests
 - `ingestion/` — PDF parsing (Docling), AWMF metadata, language ID
 - `chunking/` — structure extraction, section/table/recommendation chunking
 - `retrieval/` — hybrid dense+BM25 search, guideline/document routing, reranking
