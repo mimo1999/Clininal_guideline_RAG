@@ -11,6 +11,14 @@ python run.py      # every time — starts the chat UI + backend at http://127.0
 
 Requires only **Python 3.10+** — no Ollama, no Docker, no accounts. GPU is auto-detected and used if present, CPU otherwise. Langfuse is optional (`setup.py` prompts; answering "no" disables it everywhere, no reconfiguration needed). `setup.py` is safe to re-run (e.g. after `git pull`); `--skip-install` / `--skip-ingest` / `--skip-models` / `--no-langfuse` / `--with-ragas` are available if needed.
 
+## Running the app
+
+```bash
+python run.py
+```
+
+Starts the chat UI + RAG backend as one process. Requires `setup.py` to have run at least once (warns, but still starts, if the vector index or chunk data is missing). Polls `http://127.0.0.1:8080` until the server responds — including a model warm-up query, which can take a minute the first time — then prints the URL to open in your browser. `Ctrl+C` stops the server. Fast and repeatable: no installs, no downloads, no flags — run it every time you want to use the system after the one-time `setup.py`.
+
 ## Benchmarking
 
 ```bash
@@ -28,7 +36,6 @@ Runs the 12 golden/trap questions and writes `data_corpus/eval_report.csv` (Reca
 | Dedup embedder (near-duplicate check only) | `intfloat/multilingual-e5-small` | ~118M |
 | Generator (default) | `google/gemma-4-E2B-it` | E2B (effective ~2B, multimodal — used text-only here) |
 | Judge (always transformers, separate from the generator) | `Qwen/Qwen3.5-2B` | 2B |
-| Generator (optional, via `CLINICAL_RAG_GENERATOR_MODEL`) | any Ollama tag, e.g. `gemma3:4b` | tag-dependent |
 
 Generator and judge are deliberately different models — a same-model judge was caught rating fabricated answers as correct (dev_logs.md Entry 14).
 
