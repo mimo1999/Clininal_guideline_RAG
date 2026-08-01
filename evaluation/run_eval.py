@@ -177,6 +177,21 @@ def phase_b_generate_and_judge() -> list[dict]:
             trace.score(name="correct", value=bool(row["judge_correct"]), data_type="BOOLEAN")
             trace.score(name="grounded", value=bool(row["judge_grounded"]), data_type="BOOLEAN")
 
+        # Unload the judge model between questions -- the generator has to
+        # stay resident every iteration (used every question), but the judge
+        # is only actually needed for a few seconds per question. Keeping
+        # BOTH models GPU-resident for the entire Phase B loop was confirmed
+        # to leave too little headroom on a 14.56GB card: Q1 fit, then Q2's
+        # generate() call OOM'd with only ~100MB free and ~13.89GB already
+        # "allocated by PyTorch" before Q2 even started -- i.e. the combined
+        # static footprint of both models alone was already consuming nearly
+        # the whole budget, leaving no room for that question's KV cache.
+        # Trades ~12s of judge-model reload latency per question for that
+        # headroom back during every generate() call, which is what actually
+        # needs it. A no-op (safe) call on questions where judging never ran
+        # (e.g. Q10-12 traps, refused before reaching the judge).
+        unload_generation_llm(JUDGE_MODEL_NAME)
+
         print(f"  Q{q.id} done: refused={answer.refused} judge_correct={row['judge_correct']}")
         rows.append(row)
         tracker.advance(1)
@@ -200,7 +215,12 @@ def phase_b_generate_and_judge() -> list[dict]:
         # _release_gpu_memory()), so repeated cycles on this 4GB card can
         # accumulate until a later question OOMs even though each individual
         # call would fit in isolation -- confirmed: a real OOM hit mid-run
-        # here before this was added.
+        # here before this was added. gc.collect() before empty_cache() --
+        # matching phase_a_retrieval()'s cleanup above, missing here before --
+        # since Python may not have finalized freed generate()/judge_answer()
+        # tensors yet, and empty_cache() alone only returns memory the
+        # allocator already knows is unreferenced.
+        gc.collect()
         try:
             import torch
             if torch.cuda.is_available():
