@@ -10,10 +10,22 @@
 # torch: pinned version below installs a CPU-only build on most platforms.
 # If you have an NVIDIA GPU, install the matching CUDA build instead from
 # https://pytorch.org/get-started/locally/, e.g.
-# `pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cu126`
+# `pip install torch==2.13.0 torchaudio==2.13.0 --index-url https://download.pytorch.org/whl/cu126`
 # -- the retrieval/generation code auto-detects CUDA and falls back to CPU
-# cleanly either way (slower, not broken).
+# cleanly either way (slower, not broken). Always install torch and
+# torchaudio TOGETHER, pinned to the same version, from the same index --
+# transformers unconditionally imports torchaudio deep in an import chain
+# docling's layout model triggers (transformers.audio_utils, pulled in via
+# RTDetrImageProcessor), even though this project never uses audio. On a
+# machine that already has a matched torch/torchvision/torchaudio CUDA
+# triplet preinstalled (e.g. Google Colab), installing torch alone without
+# also pinning torchaudio replaces torch but leaves the old torchaudio
+# build in place, producing a "PyTorch and TorchAudio were compiled with
+# different CUDA versions" RuntimeError on the very first docling call.
+# Confirmed directly on Colab: torch==2.13.0 resolved to a cu130 build,
+# stock torchaudio was still cu128, crashed ingestion immediately.
 torch==2.13.0
+torchaudio==2.13.0
 
 transformers==5.14.1
 sentence-transformers==5.6.1

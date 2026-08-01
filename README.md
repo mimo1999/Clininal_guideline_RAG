@@ -56,15 +56,17 @@ Re-running `evaluation.run_eval` is safe and idempotent with respect to the corp
 
 ## What's shipped vs. regenerated
 
-Per `.gitignore`, only `data_corpus/vector_store/chroma_db.zip` (the pre-built vector index, zipped) and `data_corpus/pdf/` (source guideline PDFs) are committed from `data_corpus/`. Everything else is regenerated locally by `setup.py`:
+Per `.gitignore`, only `data_corpus/vector_store/chroma_db.zip` (the pre-built vector index), `data_corpus/processed.zip` (the pre-built chunk/router records), and `data_corpus/pdf/` (source guideline PDFs) are committed from `data_corpus/`. Everything else is restored or regenerated locally by `setup.py`:
 
 | Path | Source |
 |---|---|
 | `data_corpus/vector_store/chroma/` | Unzipped from `chroma_db.zip` (or rebuilt from scratch if the zip is missing) |
-| `data_corpus/processed/` | Regenerated from `data_corpus/pdf/` via `ingestion.run_ingest` + `chunking.build_chunks` |
+| `data_corpus/processed/` | Unzipped from `processed.zip` (or regenerated from `data_corpus/pdf/` via `ingestion.run_ingest` + `chunking.build_chunks` if the zip is missing) |
 | `data_corpus/vector_store/bm25.pkl` | Built automatically on first retrieval call |
 
-This keeps the repo small (PDFs + a compressed vector index, not the much larger set of intermediate parsed/chunked/cached artifacts) while still being fully reproducible from source.
+**Why both zips are needed, not just the vector index**: Chroma only stores the minimal metadata needed for filtering — full chunk text and the guideline/document router text are hydrated at query time straight from `data_corpus/processed/*/chunks.jsonl` (and `metadata.json`/`router_text.txt`, per `retrieval/index_store.py`, `retrieval/guideline_router.py`, `retrieval/document_router.py`). Without `processed.zip`, a fresh clone would re-run full Docling PDF parsing + chunking from scratch on every setup even though the prebuilt vector index was already restored — `processed.zip` ships only the runtime-read subset of `data_corpus/processed/` (chunk/metadata/router-text files, not the larger intermediate `parsed.md`/`references.txt` Docling output), so setup can skip that entirely.
+
+This keeps the repo small (PDFs + two compressed, runtime-only artifacts, not the much larger set of intermediate parsed/chunked/cached working files) while still being fully reproducible from source.
 
 ## Manual / partial runs
 

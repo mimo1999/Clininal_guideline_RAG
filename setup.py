@@ -7,8 +7,13 @@ Steps, in order:
   1. Install Python dependencies (requirements.txt)              [--skip-install to skip]
   2. Unzip the pre-built Chroma vector index if not already present
      (data_corpus/vector_store/chroma_db.zip -> .../chroma/)
-  3. Run ingestion + chunking from data_corpus/pdf/ if
-     data_corpus/processed/ doesn't have chunks yet              [--skip-ingest to skip]
+  3. Restore the per-document chunk/router records if not already present
+     (data_corpus/processed.zip -> .../processed/) -- required at runtime
+     (webapp + eval), NOT just for building the index: Chroma only stores
+     minimal filterable metadata, so retrieval hydrates full chunk text and
+     guideline/document router text straight from these files on every
+     query. If the zip is missing too, falls back to running ingestion +
+     chunking from data_corpus/pdf/ from scratch               [--skip-ingest to skip]
      (the BM25 sparse index builds itself automatically on first
      retrieval call -- no separate step needed)
   4. Best-effort start Langfuse tracing (OPTIONAL -- skipped
@@ -47,6 +52,7 @@ CHROMA_DIR = REPO_ROOT / "data_corpus" / "vector_store" / "chroma"
 CHROMA_ZIP = REPO_ROOT / "data_corpus" / "vector_store" / "chroma_db.zip"
 PDF_DIR = REPO_ROOT / "data_corpus" / "pdf"
 PROCESSED_DIR = REPO_ROOT / "data_corpus" / "processed"
+PROCESSED_ZIP = REPO_ROOT / "data_corpus" / "processed.zip"
 WEBAPP_URL = "http://127.0.0.1:8080"
 OLLAMA_TAGS_URL = "http://127.0.0.1:11434/api/tags"
 # Only relevant if CLINICAL_RAG_GENERATOR_MODEL opts into an Ollama tag --
@@ -111,6 +117,26 @@ def step_ingest_and_chunk(skip: bool) -> None:
         print(f"{PROCESSED_DIR} already has chunked documents -- skipping. "
               f"(Delete data_corpus/processed/ and re-run to force a rebuild.)")
         return
+
+    # Restoring from the shipped zip (chunks.jsonl / metadata.json /
+    # router_text.txt per document, guideline.json / section_titles_summary.txt
+    # per guideline -- the runtime-read subset, not the full processed/ tree,
+    # see dev_logs.md Entry 22) is what the vector index alone can't provide:
+    # Chroma only carries minimal filterable metadata, so this must exist for
+    # the webapp/eval to hydrate real chunk text at query time -- distinct
+    # from, and required in addition to, chroma_db.zip. Previously this step
+    # unconditionally re-ran full Docling PDF parsing + chunking on every
+    # fresh clone even though the vector index was already restored, since
+    # nothing shipped these records -- confirmed as the actual cause of a
+    # from-scratch setup re-parsing all PDFs despite the index being present.
+    if PROCESSED_ZIP.exists():
+        print(f"Restoring chunk/router records from {PROCESSED_ZIP.name} -> {PROCESSED_DIR}/ ...")
+        PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+        with zipfile.ZipFile(PROCESSED_ZIP) as zf:
+            zf.extractall(PROCESSED_DIR.parent)
+        print("Done.")
+        return
+
     if not PDF_DIR.exists() or not any(PDF_DIR.iterdir()):
         print(f"WARNING: {PDF_DIR} is empty or missing -- nothing to ingest. "
               f"Place guideline PDFs under data_corpus/pdf/<guideline_id>/ and re-run.")
