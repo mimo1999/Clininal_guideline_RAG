@@ -43,6 +43,17 @@ Generator and judge are deliberately different models — a same-model judge was
 
 Only `data_corpus/vector_store/chroma_db.zip`, `data_corpus/processed.zip`, and `data_corpus/pdf/` are committed — `setup.py` restores/rebuilds everything else (vector index, chunk records, BM25 index).
 
+## Adding a new guideline
+
+Drop a new `data_corpus/pdf/<guideline_id>/` folder (PDFs + optional `<guideline_id>.txt` sidecar) in, then re-run:
+
+```bash
+python -m ingestion.run_ingest --input data_corpus/pdf/
+python -m chunking.build_chunks
+```
+
+Both are incremental by default — already-ingested PDFs are tracked by content hash in `data_corpus/processed/ingested_manifest.json` and skipped, so only the new guideline actually gets (re-)parsed and (re-)chunked. The vector index is incremental too: only chunks missing from Chroma get embedded, not the whole corpus. Pass `--force` to `run_ingest`/`build_chunks` to bypass this and reprocess everything.
+
 ## Repository layout
 
 - `ingestion/` — PDF parsing (Docling), AWMF metadata, language ID

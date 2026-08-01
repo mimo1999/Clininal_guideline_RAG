@@ -5,10 +5,19 @@ build_document.build_guideline). --input can be a single guideline folder,
 a parent directory of several guideline folders (batch mode -- how this
 actually runs at the 10-15 guideline target), or a single PDF file.
 
+Incremental by default: any PDF already recorded in
+data_corpus/processed/ingested_manifest.json with a matching content hash is
+skipped rather than re-parsed -- so re-running this over the whole
+data_corpus/pdf/ tree after adding one new guideline only ingests that new
+guideline's PDFs, not the entire corpus. Pass --force to re-ingest everything
+regardless (e.g. after a parsing-logic change that should apply to already-
+ingested documents too).
+
 Usage:
     python -m ingestion.run_ingest --input "data_corpus/pdf/015-027OL"
     python -m ingestion.run_ingest --input "data_corpus/pdf/"
     python -m ingestion.run_ingest --input "data_corpus/pdf/015-027OL/015-027OLl_....pdf"
+    python -m ingestion.run_ingest --input "data_corpus/pdf/" --force
 """
 
 from __future__ import annotations
@@ -39,6 +48,7 @@ def _iter_guideline_folders(input_path: Path):
 def main() -> int:
     parser = argparse.ArgumentParser(description="Ingest guideline PDF(s) into data_corpus/processed/")
     parser.add_argument("--input", required=True, help="Path to a single PDF, a guideline folder, or a parent of several guideline folders")
+    parser.add_argument("--force", action="store_true", help="Re-ingest every PDF even if already recorded as up to date in ingested_manifest.json")
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -64,17 +74,22 @@ def main() -> int:
     total_pdfs = sum(len(list(folder.glob("*.pdf"))) for folder in guideline_folders)
     tracker = ProgressTracker("ingest", total=total_pdfs, stage="starting")
 
-    total_docs, failures = 0, 0
+    total_docs, newly_ingested, skipped, failures = 0, 0, 0, 0
     for folder in guideline_folders:
         print(f"Ingesting guideline: {folder.name}")
         tracker.set_stage(f"guideline:{folder.name}")
 
-        def _on_pdf_done(fname: str, ok: bool, g: str = folder.name) -> None:
+        def _on_pdf_done(fname: str, ok: bool, was_skipped: bool, g: str = folder.name) -> None:
+            nonlocal newly_ingested, skipped
+            if was_skipped:
+                skipped += 1
+            elif ok:
+                newly_ingested += 1
             tracker.set_stage(f"guideline:{g} pdf:{fname}")
             tracker.advance(1)
 
         try:
-            out_dirs = build_guideline(folder, on_pdf_done=_on_pdf_done)
+            out_dirs = build_guideline(folder, on_pdf_done=_on_pdf_done, force=args.force)
             total_docs += len(out_dirs)
             for out_dir in out_dirs:
                 print(f"  -> {out_dir}")
@@ -84,7 +99,8 @@ def main() -> int:
             traceback.print_exc()
 
     tracker.finish(error=f"{failures} guideline(s) failed" if failures else None)
-    print(f"\nDone: {len(guideline_folders) - failures}/{len(guideline_folders)} guidelines succeeded, {total_docs} documents ingested.")
+    print(f"\nDone: {len(guideline_folders) - failures}/{len(guideline_folders)} guidelines succeeded, "
+          f"{total_docs} documents total ({newly_ingested} newly ingested, {skipped} already up to date and skipped).")
     return 1 if failures else 0
 
 

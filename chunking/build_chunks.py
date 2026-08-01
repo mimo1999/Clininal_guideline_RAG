@@ -146,7 +146,23 @@ def _guideline_ids_present() -> list[str]:
     return sorted(ids)
 
 
-def build_chunks_for_guideline(guideline_id: str, on_doc_done: Optional[Callable[[str], None]] = None) -> list[Path]:
+def _chunks_up_to_date(doc_dir: Path) -> bool:
+    """True if chunks.jsonl already exists and is at least as new as the
+    parsed.md it's derived from -- i.e. this document was already chunked
+    since its last (re-)ingestion, so re-chunking it now would just
+    reproduce the same output. mtime-based, not a content hash (unlike
+    ingestion/manifest.py's PDF-level check): parsed.md is only ever
+    rewritten by build_document() when a PDF is actually re-ingested (see
+    ingestion/manifest.py), so its mtime alone is a reliable signal here --
+    no need for a second, separately-maintained manifest at this layer."""
+    chunks_path = doc_dir / "chunks.jsonl"
+    parsed_path = doc_dir / "parsed.md"
+    return chunks_path.exists() and parsed_path.exists() and chunks_path.stat().st_mtime >= parsed_path.stat().st_mtime
+
+
+def build_chunks_for_guideline(
+    guideline_id: str, on_doc_done: Optional[Callable[[str], None]] = None, force: bool = False,
+) -> list[Path]:
     doc_dirs = [
         d for d in sorted(PROCESSED_DIR.iterdir())
         if d.is_dir() and not d.name.startswith("_guideline_")
@@ -156,7 +172,10 @@ def build_chunks_for_guideline(guideline_id: str, on_doc_done: Optional[Callable
 
     outputs = []
     for d in doc_dirs:
-        outputs.append(build_chunks(d.name))
+        if not force and _chunks_up_to_date(d):
+            outputs.append(d / "chunks.jsonl")
+        else:
+            outputs.append(build_chunks(d.name))
         if on_doc_done:
             on_doc_done(d.name)
 
@@ -188,7 +207,7 @@ def _total_doc_count() -> int:
     return count
 
 
-def build_chunks_for_all() -> list[Path]:
+def build_chunks_for_all(force: bool = False) -> list[Path]:
     tracker = ProgressTracker("chunk_build", total=_total_doc_count(), stage="starting")
     outputs = []
     try:
@@ -200,7 +219,7 @@ def build_chunks_for_all() -> list[Path]:
                 tracker.set_stage(f"guideline:{g} doc:{doc_id}")
                 tracker.advance(1)
 
-            outputs.extend(build_chunks_for_guideline(guideline_id, on_doc_done=_on_doc_done))
+            outputs.extend(build_chunks_for_guideline(guideline_id, on_doc_done=_on_doc_done, force=force))
     except Exception as e:
         tracker.finish(error=str(e))
         raise
@@ -209,8 +228,8 @@ def build_chunks_for_all() -> list[Path]:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
+    if len(sys.argv) > 1 and sys.argv[1] != "--force":
         print(build_chunks(sys.argv[1]))
     else:
-        for p in build_chunks_for_all():
+        for p in build_chunks_for_all(force="--force" in sys.argv):
             print(p)

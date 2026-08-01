@@ -84,41 +84,52 @@ def build_indexes(force_rebuild: bool = False):
 
     chunks = load_all_chunks()
     chunk_ids = list(chunks.keys())
+    desired_ids = set(chunk_ids)
 
     STORE_DIR.mkdir(parents=True, exist_ok=True)
     client = chromadb.PersistentClient(path=str(CHROMA_PATH))
 
-    existing_names = [c.name for c in client.list_collections()]
-    collection = None
-    if not force_rebuild and COLLECTION_NAME in existing_names:
-        collection = client.get_collection(COLLECTION_NAME)
-        if collection.count() != len(chunk_ids):
-            collection = None  # stale -- rebuild
-
-    if collection is None:
+    if force_rebuild:
         try:
             client.delete_collection(COLLECTION_NAME)
         except Exception:
             pass
-        collection = client.get_or_create_collection(COLLECTION_NAME)
+    collection = client.get_or_create_collection(COLLECTION_NAME)
 
-        tracker = ProgressTracker("index_build", total=len(chunk_ids), stage="embedding")
+    # Diff against what's already embedded rather than the old all-or-nothing
+    # "count mismatch -> delete + re-embed everything" check -- that made
+    # adding a single new guideline re-embed the ENTIRE corpus (thousands of
+    # chunks) just because the total count changed. include=[] skips pulling
+    # back embeddings/documents/metadatas for this check, just ids -- cheap
+    # even at several thousand chunks.
+    try:
+        existing_ids = set(collection.get(include=[])["ids"])
+    except Exception:
+        existing_ids = set(collection.get()["ids"])
+
+    stale_ids = existing_ids - desired_ids
+    if stale_ids:
+        # A chunk_id no longer produced by the current corpus (doc removed,
+        # or re-chunked under a different id scheme) -- drop it so it can't
+        # still surface in search results for content that no longer exists.
+        collection.delete(ids=list(stale_ids))
+
+    missing_ids = [cid for cid in chunk_ids if cid not in existing_ids]
+    if missing_ids:
+        tracker = ProgressTracker("index_build", total=len(missing_ids), stage="embedding")
 
         # Embed and write one batch at a time (not embed-everything-then-add)
         # so a kill mid-run loses at most one batch's GPU compute instead of
-        # the whole corpus's -- embedding 5000+ chunks on a 4GB GPU takes long
-        # enough that an all-or-nothing call isn't safely interruptible.
-        # Resuming after a partial run: re-invoking build_indexes() sees
-        # collection.count() != len(chunk_ids) (stale, from the `collection
-        # is None` check above) and starts over from batch 0 -- already-added
-        # ids just get overwritten by Chroma's upsert-on-add semantics, so
-        # this is correct, just not maximally efficient. A true resume would
-        # need to diff existing ids first; not worth the complexity yet at
-        # this corpus size.
+        # the whole run's -- embedding thousands of chunks on a constrained
+        # GPU takes long enough that an all-or-nothing call isn't safely
+        # interruptible. Resuming after a partial run: re-invoking
+        # build_indexes() re-diffs existing vs. desired ids from scratch, so
+        # already-added ids from the interrupted run are correctly excluded
+        # from missing_ids and never re-embedded.
         batch = 256
         try:
-            for i in range(0, len(chunk_ids), batch):
-                batch_ids = chunk_ids[i:i + batch]
+            for i in range(0, len(missing_ids), batch):
+                batch_ids = missing_ids[i:i + batch]
                 batch_texts = [chunks[cid]["text"] for cid in batch_ids]
                 batch_embeddings = embed_texts(batch_texts)
                 batch_metadatas = [_chroma_metadata(chunks[cid]) for cid in batch_ids]
@@ -128,7 +139,7 @@ def build_indexes(force_rebuild: bool = False):
                     documents=batch_texts,
                     metadatas=batch_metadatas,
                 )
-                tracker.set_stage(f"batch {i // batch + 1}/{(len(chunk_ids) - 1) // batch + 1}")
+                tracker.set_stage(f"batch {i // batch + 1}/{(len(missing_ids) - 1) // batch + 1}")
                 tracker.advance(len(batch_ids))
         except Exception as e:
             tracker.finish(error=str(e))

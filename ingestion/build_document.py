@@ -27,6 +27,7 @@ from typing import Callable, Optional
 
 from .guideline_schema import GuidelineMetadata
 from .langid import detect_language
+from .manifest import is_up_to_date, load_manifest, record, save_manifest
 from .parse_guideline_sidecar import SidecarResult, parse_sidecar
 from .parse_pdf import parse_pdf_isolated
 from .reconcile import _log_issue, reconcile
@@ -147,15 +148,25 @@ def build_document(
 def build_guideline(
     guideline_dir: str | Path,
     society_hint: str = DEFAULT_SOCIETY_HINT,
-    on_pdf_done: Optional[Callable[[str, bool], None]] = None,
+    on_pdf_done: Optional[Callable[[str, bool, bool], None]] = None,
+    force: bool = False,
 ) -> list[Path]:
     """Ingest every PDF in one guideline folder (data_corpus/pdf/<guideline_id>/),
     using the folder's <guideline_id>.txt sidecar as the primary metadata
     source. Returns the list of per-document output dirs.
 
-    on_pdf_done(filename, success), if given, fires after each PDF (success or
-    failure) -- the progress-tracking hook for run_ingest.py; this module has
-    no opinion on what the callback does with that signal."""
+    Skips any PDF whose content hash already matches an entry in
+    ingestion/manifest.py's manifest (data_corpus/processed/ingested_manifest.json)
+    -- i.e. it's already been ingested and hasn't changed since. This is what
+    makes adding one new guideline folder cheap: existing, unchanged PDFs
+    don't get re-parsed (the expensive Docling step) just because run_ingest
+    was invoked again over the whole data_corpus/pdf/ tree. Pass force=True
+    to bypass this and re-ingest everything regardless.
+
+    on_pdf_done(filename, success, skipped), if given, fires after each PDF
+    (success, failure, OR skip) -- the progress-tracking hook for
+    run_ingest.py; this module has no opinion on what the callback does with
+    that signal."""
     guideline_dir = Path(guideline_dir)
     guideline_id = guideline_dir.name
     sidecar_path = guideline_dir / f"{guideline_id}.txt"
@@ -206,19 +217,36 @@ def build_guideline(
     ]
     type_counts = Counter(resolved_types)
 
+    manifest = load_manifest()
+
     out_dirs = []
     for pdf_path in pdf_paths:
+        if not force and is_up_to_date(manifest, guideline_id, pdf_path):
+            doc_id = manifest[f"{guideline_id}/{pdf_path.name}"]["doc_id"]
+            out_dirs.append(PROCESSED_DIR / doc_id)
+            if on_pdf_done:
+                on_pdf_done(pdf_path.name, True, True)
+            continue
+
         doc_type_hint = doc_type_hints[pdf_path]
         resolved_type = doc_type_hint or "unknown"
         doc_id_suffix = extract_filename_suffix(pdf_path.name) if type_counts[resolved_type] > 1 else None
         try:
-            out_dirs.append(build_document(
+            out_dir = build_document(
                 pdf_path, society_hint=society_hint, sidecar=sidecar,
                 guideline_id=guideline_id, doc_type_hint=doc_type_hint,
                 doc_id_suffix=doc_id_suffix,
-            ))
+            )
+            out_dirs.append(out_dir)
+            record(manifest, guideline_id, pdf_path, out_dir.name)
+            # Save after each PDF, not once at the end -- matches this
+            # project's established crash-safety pattern (e.g.
+            # evaluation/run_eval.py's per-question write): a kill partway
+            # through a large batch shouldn't lose every already-ingested
+            # PDF's skip-eligibility for next time.
+            save_manifest(manifest)
             if on_pdf_done:
-                on_pdf_done(pdf_path.name, True)
+                on_pdf_done(pdf_path.name, True, False)
         except Exception as e:
             # Isolated per-PDF (subprocess) conversion means one PDF crashing
             # (e.g. std::bad_alloc under memory pressure) can't corrupt the
@@ -226,5 +254,5 @@ def build_guideline(
             # instead of losing every remaining document to one bad PDF.
             _log_issue(guideline_id, "pdf_conversion_failed", f"{pdf_path.name}: {e}")
             if on_pdf_done:
-                on_pdf_done(pdf_path.name, False)
+                on_pdf_done(pdf_path.name, False, False)
     return out_dirs
