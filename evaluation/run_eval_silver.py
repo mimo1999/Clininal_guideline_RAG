@@ -146,8 +146,9 @@ def main() -> None:
         row["answer_text"] = answer_text
 
         if not refused_by_llm:
+            retrieved_context = "\n\n---\n\n".join(c.get("text", "") for c in result.chunks)
             with tracing.trace_judge(trace, JUDGE_MODEL, q.question, q.reference_answer, answer_text) as jgen:
-                verdict = _judge(q.question, q.reference_answer, answer_text)
+                verdict = _judge(q.question, q.reference_answer, answer_text, retrieved_context)
                 if jgen is not None:
                     jgen.update(output=verdict, usage=verdict["usage"])
             row["judge_correct"] = verdict["correct"]

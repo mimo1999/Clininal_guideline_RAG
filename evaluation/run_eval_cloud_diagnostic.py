@@ -39,10 +39,16 @@ def _looks_like_refusal(text: str, refusal_string: str) -> bool:
     return refusal_string.lower() in text.strip().lower()
 
 
-def _judge(question: str, reference_answer: str, generated_answer: str) -> dict:
+def _judge(question: str, reference_answer: str, generated_answer: str, retrieved_context: str = "") -> dict:
+    # retrieved_context: same rationale as evaluation/judge.py's judge_answer()
+    # -- lets `grounded` be checked against the actual retrieved evidence
+    # instead of only the reference_answer string. Optional/defaults to ""
+    # for backward compatibility.
+    context_block = f"\n\nAbgerufener Quelltext (Basis der generierten Antwort):\n{retrieved_context}" if retrieved_context else ""
     user_prompt = f"""Frage: {question}
 
 Referenzantwort: {reference_answer}
+{context_block}
 
 Generierte Antwort: {generated_answer}
 
@@ -166,8 +172,9 @@ def main(compare_ragas: bool = False):
             row["fused_ndcg_at_10"] = _ndcg_at_k(fused_sections, q.expected_section_number, 10)
 
         if q.reference_answer and not refused_by_llm:
+            retrieved_context = "\n\n---\n\n".join(c.get("text", "") for c in result.chunks)
             with tracing.trace_judge(trace, JUDGE_MODEL, q.question, q.reference_answer, answer_text) as jgen:
-                verdict = _judge(q.question, q.reference_answer, answer_text)
+                verdict = _judge(q.question, q.reference_answer, answer_text, retrieved_context)
                 if jgen is not None:
                     jgen.update(output=verdict, usage=verdict["usage"])
             row["judge_correct"] = verdict["correct"]

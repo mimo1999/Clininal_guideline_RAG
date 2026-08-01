@@ -63,7 +63,16 @@ RERANK_MAX_LENGTH = _int("RERANK_MAX_LENGTH", 512)
 RRF_K = _int("RRF_K", 60)
 DENSE_TOP_K = _int("DENSE_TOP_K", 40)
 SPARSE_TOP_K = _int("SPARSE_TOP_K", 40)
-FUSED_TOP_K = _int("FUSED_TOP_K", 25)
+# 25 -> 30: confirmed too narrow on the 7-guideline corpus via a real miss --
+# Q3's expected section (10.6) ranked 19th in dense and 15th in sparse
+# retrieval individually (genuinely findable, not a total miss), but RRF
+# fusion placed it at combined rank 28, just past the old FUSED_TOP_K=25
+# cutoff. This was tuned back when the corpus held 2 guidelines
+# (dev_logs.md Entry 10); more guidelines means more chunks compete for the
+# same fixed window, so a fixed-size cutoff needs periodic re-validation as
+# the corpus grows, not a one-time tune. 30 gives a small margin above the
+# confirmed-needed rank 28, not tuned to exactly match it.
+FUSED_TOP_K = _int("FUSED_TOP_K", 30)
 RERANK_TOP_K = _int("RERANK_TOP_K", 8)
 RERANK_DIAGNOSTIC_K = _int("RERANK_DIAGNOSTIC_K", 15)
 RERANK_CONFIDENCE_THRESHOLD = _float("RERANK_CONFIDENCE_THRESHOLD", 0.1)

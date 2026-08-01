@@ -1,0 +1,146 @@
+Number,Question,NotebookLM_Answer,Reference
+Q1,Welche Untersuchung und in welchem Intervall wird für Frauen im Alter von 20 bis 34 Jahren im organisierten Screening empfohlen?,"Für Frauen im Alter von 20 bis 34 Jahren (die im Rahmen der Leitlinie unter die Altersgruppe der 20- bis 35-Jährigen fallen) gelten im organisierten Screening in Deutschland folgende Empfehlungen:
+
+* **Empfohlene Untersuchung:** Eine **zytologische Untersuchung** (Pap-Abstrich).
+* **Intervall:** Die Untersuchung soll **jährlich** durchgeführt werden.
+
+**Hintergrund und Übergangsregelungen:**
+Laut den Beschlüssen des Gemeinsamen Bundesausschusses (G-BA) zur Krebsfrüherkennungs-Richtlinie (KFE-RL) bleibt dieser Anspruch auf eine jährliche zytologische Untersuchung für Frauen zwischen 20 und 35 Jahren zunächst in einer **Übergangsphase** von mindestens sechs Jahren bestehen. Nach dieser Phase soll unter Berücksichtigung von Monitoring-Daten bewertet werden, ob für diese Altersgruppe eine Anpassung des Screeningintervalls und der Screeningmethode an internationale Empfehlungen erfolgen soll. 
+
+Erst ab dem Alter von **35 Jahren** wird die jährliche zytologische Untersuchung standardmäßig durch eine dreijährliche Kombinationsuntersuchung abgelöst, die aus einem HPV-Test und einer Zytologie besteht.
+
+🔍 Möchten Sie mehr darüber erfahren, wie sich die Empfehlungen und die Nutzen-Schaden-Abwägung für Frauen ab 35 Jahren im Vergleich dazu unterscheiden?","Screening, ages 20–34. Reference: cytology (Pap smear) on a yearly basis; HPV testing is not the primary tool in this age group. Evidence: the age-stratified screening-program section, 20–34 band."
+Q2,"Welches Testverfahren und welches Intervall gelten für Frauen ab 35 Jahren?
+","Für Frauen **ab 35 Jahren** gelten im organisierten Früherkennungsprogramm in Deutschland folgende Vorgaben:
+
+* **Empfohlenes Testverfahren:** Es wird eine **Kombinationsuntersuchung** (Ko-Testung) durchgeführt, die aus einem **HPV-Test** (zum Nachweis einer genitalen Infektion mit humanen Papillomviren) und einer **zytologischen Untersuchung** (Pap-Abstrich) besteht.
+* **Intervall:** Diese Kombinationsuntersuchung wird im Abstand von **alle drei Jahre** angeboten und ersetzt in dieser Altersgruppe die bis dahin jährliche zytologische Untersuchung.
+
+**Ergänzende Hinweise zur Altersgrenze:**
+* **Obere Altersgrenze:** Es gibt zunächst keine starre obere Altersgrenze für das Screening. Eine Anpassung oder Festlegung soll nach einer Übergangsphase anhand von Monitoring-Daten beraten werden. 
+* **Regelung ab 65 Jahren:** Frauen über 65 Jahren sollen weiterhin motiviert werden, an der Krebsfrüherkennung teilzunehmen. Haben diese Frauen jedoch in der Vergangenheit mehrfach negative Ergebnisse bei der kombinierten HPV-Pap-Untersuchung vorzuweisen, kann individuell mit dem Arzt über eine Beendigung der Früherkennung gesprochen werden.
+
+🔍 Ich kann Ihnen auch heraussuchen, wie der genaue Algorithmus zur weiteren Abklärung aussieht, falls einer der beiden Tests im Rahmen der Kombinationsuntersuchung positiv ausfällt."," Screening, ages 35+. Reference: co-testing (HPV + cytology) every 3 years (Ko-Testung, 3-Jahres-Intervall). Evidence: the 35+ algorithm / co-testing section."
+Q3,"Wie ist das empfohlene Vorgehen bei einer Frau ab 35, die HPV-positiv, aber zytologisch unauffällig ist?","Bei einer Frau ab 35 Jahren, die **HPV-positiv, aber zytologisch unauffällig** (Pap I / normal) ist, liegt ein sogenannter **diskordanter Befund** vor. In diesem Fall sieht das empfohlene Vorgehen im organisierten Screening folgende Schritte vor:
+
+1. **Wiederholungsuntersuchung nach 12 Monaten (Kontrolle):**
+   * Da die beiden Testergebnisse widersprüchlich sind, wird die Kombinationsuntersuchung (Ko-Testung aus HPV-Test und Pap-Abstrich) nach **12 Monaten wiederholt**. 
+
+2. **Vorgehen bei der Nachkontrolle nach 12 Monaten:**
+   * **Abklärungskolposkopie bei Persistenz:** Zeigt sich bei dieser Kontrolle nach 12 Monaten weiterhin ein positiver HPV-Befund (Persistenz) oder tritt eine zytologische Auffälligkeit ab der Gruppe II-p (bzw. ASC-US) auf, sollte die Patientin zur **kolposkopischen Abklärung** (Abklärungskolposkopie) in eine zertifizierte Dysplasiesprechstunde überwiesen werden.
+   * **Rückkehr zum Regelscreening:** Sind bei der Nachkontrolle nach 12 Monaten **beide Befunde negativ** (sowohl der HPV-Test als auch die Zytologie unauffällig), kann die Frau wieder in das reguläre dreijährliche Screening-Intervall zurückkehren.
+
+3. **Besonderheiten und Zusatzoptionen:**
+   * **Direkte Kolposkopie bei HPV 16/18:** Liegt ein positiver Nachweis speziell für die Hochrisiko-Typen **HPV 16 oder HPV 18** vor, wird aufgrund des besonders hohen Risikos für schwerwiegende Zellveränderungen empfohlen, direkt eine **Abklärungskolposkopie** durchführen zu lassen.
+   * **Triage mittels p16/Ki-67:** Bei HPV-positiven Befunden mit unauffälliger Zytologie kann zur genaueren Risikoeinschätzung eine Triage mit dem **p16/Ki-67-Doppelmarkierungsverfahren** (Dual-Stain) erfolgen, um Frauen mit einem erhöhten Risiko für fortschreitende Veränderungen präziser zu identifizieren.
+
+🔍 Falls im Rahmen einer solchen Abklärung eine behandlungsbedürftige Gewebeveränderung (CIN) festgestellt wird: Möchten Sie wissen, welche verschiedenen Therapieverfahren die Leitlinie empfiehlt und wie sich diese auf das Risiko in einer späteren Schwangerschaft auswirken?","HPV-positive, cytology-negative (35+). Reference: repeat co-testing after ~12 months rather than immediate colposcopy; persistent positivity at follow-up then leads to colposcopy. Evidence: the discordant-result (HPV+ / Pap-negative) management section."
+Q4,Ab welchem Alter beginnt das organisierte Zervixkarzinom-Screening in Deutschland?,"In Deutschland beginnt der gesetzliche Anspruch auf das organisierte Zervixkarzinom-Screening ab dem Alter von **20 Jahren**. 
+
+Je nach Altersgruppe sieht das programmierte Screening unterschiedliche Untersuchungen vor:
+* **Frauen im Alter von 20 bis 34 Jahren** haben Anspruch auf eine **jährliche zytologische Untersuchung** (Pap-Abstrich).
+* **Frauen ab 35 Jahren** wird stattdessen alle drei Jahre eine **Kombinationsuntersuchung** (Ko-Testung), bestehend aus einem HPV-Test und einer zytologischen Untersuchung, angeboten.
+
+**Hintergrund zum Screeningbeginn:**
+Obwohl der gesetzliche Anspruch in Deutschland bereits mit 20 Jahren einsetzt, stellt die Leitliniengruppe fest, dass das organisierte Zervixkarzinomscreening medizinisch sinnvoll erst **ab dem Alter von 25 Jahren** beginnen kann. Bei Frauen unter 25 Jahren gibt es keine Belege dafür, dass der Nutzen der Untersuchung die potenziellen Schäden überwiegt. In dieser jungen Altersgruppe treten meist transiente (vorübergehende) HPV-Infektionen auf, die sich von alleine wieder zurückbilden. Ein zu frühes Screening führt hier häufiger zu Überdiagnostik und unnötigen Gewebeentnahmen (Konisationen), die wiederum Risiken für spätere Schwangerschaften bergen.
+
+🔍 Wir könnten uns auch anschauen, unter welchen Voraussetzungen das Screening im höheren Alter (beispielsweise ab 65 Jahren) sicher beendet werden kann.",
+Q5,"Welche Rolle spielt die HPV-Selbstabnahme (Selbstentnahme) laut Leitlinie, und für welche Gruppe?","Die **HPV-Selbstabnahme (Selbstentnahme)** für zu Hause spielt laut der S3-Leitlinie eine wichtige, aber **streng eingegrenzte Rolle** in der Krebsfrüherkennung:
+
+### 1. Für welche Gruppe wird die Selbstentnahme empfohlen?
+Der HPV-Selbstabstrich ist ausschließlich für **Frauen vorgesehen, die nicht an der regulären Krebsvorsorge teilnehmen (sogenannte Non-Responder / Nicht-Teilnehmerinnen)**. Hierzu zählen insbesondere Frauen, die auch auf schriftliche Einladungsschreiben der Krankenkassen nicht reagieren. 
+
+### 2. Welche Rolle und welchen Nutzen hat sie?
+* **Deutliche Steigerung der Teilnahmerate:** Durch das Angebot eines Selbstabstriches lässt sich die Beteiligung von Frauen, die sonst nicht zur Vorsorge gehen, **mehr als verdoppeln** (die relative Teilnahmerate liegt im Vergleich zum normalen Einladungsschreiben bei 2,71). 
+* **Abbau persönlicher Barrieren:** Viele Frauen meiden die reguläre gynäkologische Untersuchung aufgrund von Schamgefühl, Unwohlsein, Zeitmangel oder organisatorischen Hürden. Der vaginale Selbstabstrich bietet hier eine hochgradig akzeptierte und als einfach empfundene Alternative für zu Hause.
+* **Leitlinien-Empfehlung (Grad B):** Die Leitlinie spricht eine Empfehlung aus, dass diesen Frauen (Non-Respondern) die Möglichkeit zum Selbstabstrich gegeben werden sollte.
+
+### 3. Welche Einschränkungen und Qualitätsunterschiede gibt es?
+* **Kein Ersatz für die reguläre Vorsorge (Grad A):** Der Selbsttest **soll ausdrücklich den Nicht-Teilnehmerinnen vorbehalten bleiben** und darf nicht als allgemeiner Ersatz für das professionelle Screening durch den Frauenarzt dienen.
+* **Geringere Testgüte:** Im Vergleich zu einem von medizinischem Fachpersonal entnommenen Abstrich hat der Selbstabstrich eine **signifikant niedrigere Sensitivität** (um 12 % niedriger für den Nachweis von CIN 2+ und um 11 % niedriger für CIN 3+) sowie eine um 4 % niedrigere Spezifität.
+* **Abhängigkeit vom Testverfahren:** Die Zuverlässigkeit hängt stark vom Labortest ab. **PCR-basierte Nachweisverfahren** sind für Selbstabstriche gut geeignet. Andere etablierte Verfahren wie Hybrid Capture 2, Cervista oder APTIMA weisen im Selbstabstrich dagegen eine signifikant schlechtere Sensitivität auf als beim professionellen Abstrich.
+* **Notwendigkeit der Nachabklärung (Compliance):** Ein medizinischer Nutzen zur Senkung der Krebsrate entsteht nur dann, wenn Frauen mit einem positiven HPV-Selbsttest auch tatsächlich die notwendigen ärztlichen Folgeuntersuchungen zur Abklärung wahrnehmen.
+
+📊 Ich kann Ihnen auch heraussuchen, welche konkreten HPV-Nachweisverfahren und Labor-Systeme die Leitlinie für das reguläre, professionelle Screening als klinisch validiert auflistet.",
+Q6,"Welche HPV-Typen sind für die Mehrzahl der Zervixkarzinome verantwortlich?
+
+
+","Für die große Mehrheit aller Zervixkarzinome sind vor allem die beiden Hochrisiko-HPV-Typen **HPV 16 und HPV 18** verantwortlich.
+
+* **HPV 16 und HPV 18** sind zusammengenommen für **60 % bis 70 %** (bzw. alleine bereits für rund 70 %) aller Fälle von Gebärmutterhalskrebs verantwortlich.
+* Erweitert man das Spektrum auf die **acht häufigsten Hochrisiko-Typen** (HPV 16, 18, 33, 45, 31, 58, 52 und 35), sind diese für bis zu **90 %** aller Gewebeveränderungen im Tumormaterial verantwortlich.
+
+Dabei ist **HPV 16** weltweit der am häufigsten nachgewiesene HPV-Typ.
+
+💉 Ich kann Ihnen auch nähere Informationen dazu heraussuchen, wie hoch der Schutz und die Wirksamkeit der verschiedenen in Deutschland zugelassenen HPV-Impfstoffe gegen diese Virustypen laut der Leitlinie ist.",
+Q7,Was ist der Unterschied zwischen einer zytologiebasierten und einer HPV-basierten Screening-Strategie?,"Der Unterschied zwischen einer zytologiebasierten und einer HPV-basierten Screening-Strategie liegt vor allem in der biologischen Zielsetzung, der Testgüte, den Screening-Intervallen sowie der Nutzen-Schaden-Abwägung:
+
+*   **Nachweisziel (Was getestet wird):**
+    *   Die **Zytologie (Pap-Abstrich)** untersucht morphologische Zellveränderungen am Gebärmutterhals, um bereits bestehende Krebsvorstufen oder Tumorzellen direkt mikroskopisch zu identifizieren.
+    *   Der **HPV-Test** ist ein molekularbiologisches Verfahren, das direkt das Erbgut (DNA oder RNA) von humanen Papillomviren nachweist. Da eine persistierende Infektion mit Hochrisiko-HPV die notwendige Ursache für die Entstehung von Gebärmutterhalskrebs ist, setzt dieser Test bereits früher an, nämlich beim Nachweis des verursachenden Erregers.
+
+*   **Sensitivität und Spezifität (Testgüte):**
+    *   **HPV-Tests** weisen eine **signifikant höhere klinische Sensitivität** (Empfindlichkeit beim Aufspüren von Veränderungen) und eine bessere Reproduzierbarkeit auf als die Zytologie. 
+    *   Dafür ist die **Spezifität des HPV-Tests geringer**. Das bedeutet, dass er im Vergleich zur Zytologie häufiger positiv ausfällt, obwohl keine behandlungsbedürftige Gewebeveränderung vorliegt. Viele HPV-Infektionen sind nämlich transient (vorübergehend) und heilen von selbst wieder ab.
+
+*   **Sicherheit und Screening-Intervalle:**
+    *   Ein **negativer HPV-Test bietet eine deutlich längere und verlässlichere Sicherheit** vor zukünftigen Krebsvorstufen (CIN 3+) und invasiven Karzinomen als ein unauffälliger Pap-Abstrich. Ein negativer HPV-Test schließt für einen Zeitraum von fünf Jahren ein CIN 3+ Risiko sicherer aus als eine unauffällige Zytologie für ein Jahr.
+    *   Aufgrund dieser hohen Sicherheit können die Screening-Intervalle bei HPV-basierten Strategien (oder einer Kombination aus HPV-Test und Zytologie) **problemlos auf 3 bis 5 Jahre verlängert werden**, während das rein zytologische Screening in Deutschland traditionell jährlich durchgeführt wurde.
+
+*   **Effektivität bei der Krebsverhütung:**
+    *   Organisierte Screening-Programme, die auf einer HPV-Testung (allein oder als Kombinationsuntersuchung) in 3- bis 5-jährigen Intervallen basieren, führen bei Frauen ab 30 Jahren in der zweiten Screeningrunde zu einer **signifikant deutlicheren Senkung von Neuerkrankungen an Gebärmutterhalskrebs und schweren Krebsvorstufen (CIN 3+)** als rein zytologische Programme.
+
+*   **Risiko von Überdiagnosen und Übertherapie (Schadenspotenzial):**
+    *   Innerhalb desselben Screeningintervalls bergen HPV-basierte Verfahren ein **erhöhtes Potenzial für Schäden**. Sie detektieren mehr klinisch bedeutungslose Befunde (wie leichte Dysplasien oder CIN 2), die sich eigentlich spontan zurückgebildet hätten. Dies führt zu psychischem Stress, einer höheren Rate an nötigen Abklärungsuntersuchungen und potenziell unnötigen Operationen (Konisationen). Dieses Risiko ist besonders bei Frauen unter 30 Jahren ausgeprägt, weshalb ein primäres HPV-Screening für diese junge Altersgruppe nicht empfohlen wird.
+
+🔍 Soll ich Ihnen heraussuchen, welche konkreten HPV-Testverfahren von der Leitliniengruppe als klinisch validiert für das Primärscreening in Deutschland eingestuft werden?",
+Q8,Welche Empfehlung gibt die Leitlinie zur Kolposkopie bei auffälligem Befund?,"Die S3-Leitlinie gibt detaillierte Empfehlungen dazu, wann und in welcher Form eine Kolposkopie (Abklärungskolposkopie) bei auffälligen Befunden durchgeführt werden soll.
+
+### Generelle Prinzipien
+* **Kein Screening:** Die Kolposkopie **soll nicht als Screeningmethode** eingesetzt werden, sondern dient ausschließlich der gezielten Abklärung auffälliger Screeningbefunde.
+* **Indikation ab 10 % Risiko:** Die Indikation zur kolposkopischen Abklärung **soll** gestellt werden, sobald die Post-Test-Wahrscheinlichkeit für ein durchschnittliches kumulatives CIN-3+-Risiko bei **mindestens 10 %** liegt. Sie dient dann der histologischen Sicherung von Atypien bzw. Neoplasien sowie der Festlegung der operativen Strategie.
+* **Zertifizierte Strukturen:** Die Abklärungskolposkopie **soll** in einer nach DKG/DGGG/AGO/AG-CPC/EFC **zertifizierten Dysplasiesprechstunde oder Dysplasieeinheit** erfolgen.
+
+### Direkte Überweisung zur Kolposkopie (Sofortige Abklärung)
+Eine direkte kolposkopische Abklärung ist für folgende Befundkonstellationen vorgeschrieben:
+* **Mittel- und höhergradige zytologische Befunde:** Bei Befunden der Gruppen **IIID2, IVa-p, IVa-g, IVb-p, IVb-g, V-p, V-g, V-e und V-x** im Screening **soll** unmittelbar eine kolposkopische Abklärung durchgeführt werden. Allgemein gilt, dass hochgradige zytologische Läsionen sofort mittels Kolposkopie abzuklären sind.
+* **Nachweis von HPV 16 oder 18:** Bei einem positiven **HPV-16/18-Testergebnis** im primären HPV-basierten Screening **sollte** eine kolposkopische Abklärung erfolgen.
+* **HPV-positiv mit zytologischer Auffälligkeit:** Liegt ein positiver HPV-Screeningtest vor und zeigt die Abklärungszytologie bzw. das kombinierte Screening einen Befund **ab der Gruppe II-p**, **sollte** eine kolposkopische Abklärung erfolgen.
+
+### Kolposkopie nach vorheriger Triage (Abklärung nach Kontrollintervall)
+Bei leichteren oder grenzwertigen Befunden sieht der Abklärungsalgorithmus zunächst eine Kontrolluntersuchung (meist nach 6 Monaten) vor. Fällt diese positiv aus, ist die Kolposkopie indiziert:
+* **Pap II-p (~ASC-US) und Pap II-g (~AGUS):** Es wird ein HR-HPV-Test (oder optional eine p16/Ki-67-Testung) in 6 Monaten empfohlen. Ist dieser Triage-Test **positiv**, **sollte** eine kolposkopische Abklärung innerhalb von 3 Monaten erfolgen.
+* **Pap IIID1 (~LSIL):** Es erfolgt eine Abklärung mittels HR-HPV-Test (oder optional p16/Ki-67-Test) nach 6 Monaten. Fällt dieser **positiv** aus, **sollte** eine kolposkopische Abklärung innerhalb von 3 Monaten stattfinden.
+* **Unklare Befunde (Pap III-p, III-g, III-x, III-e):** Eine Abklärung mittels HR-HPV-Test oder p16/Ki-67-Immunzytochemie kann innerhalb von 3 Monaten erfolgen. Ist der Befund **positiv**, **sollte** die Kolposkopie innerhalb von 3 Monaten durchgeführt werden.
+
+### Vorgehen und Durchführung während der Kolposkopie
+* **Typ 1 und Typ 2 Transformationszone (TZ):** Liegt die Grenze zwischen Platten- und Zylinderepithel vollständig einsehbar auf der Ektozervix oder reicht nur teilweise in den Kanal, sollten **kolposkopisch gesteuerte Biopsien** aus der bzw. den schwerstgradigen Läsionen entnommen werden.
+* **Typ 3 Transformationszone (TZ):** Ist die Grenze im Gebärmutterhalskanal nicht vollständig einsehbar, **sollte** stattdessen eine **endozervikale Curettage (Kürettage)** erfolgen.
+
+🤰 Möchten Sie wissen, wie sich die Empfehlungen zur Abklärungskolposkopie und zur Entnahme von Biopsien während einer Schwangerschaft verändern und welche Besonderheiten dabei zu beachten sind?",
+Q9,Welche Bedeutung hat die HPV-Impfung im Kontext der Prävention laut Leitlinie?,"Die **HPV-Impfung** stellt laut der Leitlinie die zentrale Säule der **primären Prävention** zur Verhinderung von Infektionen mit humanen Papillomviren, deren Vorstufen (wie zervikalen, vaginalen oder vulvären intraepithelialen Neoplasien) und der Entstehung von Gebärmutterhalskrebs dar.
+
+### 1. Impfempfehlung und Zielgruppe
+*   **Altersgruppe:** Die Ständige Impfkommission (STIKO) empfiehlt die Impfung für alle **Mädchen im Alter von 9 bis 14 Jahren**. Die Impfung soll möglichst frühzeitig und vor dem ersten Geschlechtsverkehr abgeschlossen sein. 
+*   **Vorausgehende Tests:** Eine vorherige HPV-Testung vor der Impfung wird **ausdrücklich nicht empfohlen**, da dies zusätzliche Kosten und Ängste verursacht. Auch bei bestehender HPV-Positivität soll geimpft werden, da selten eine Infektion mit allen Impfstoff-Typen gleichzeitig vorliegt.
+*   **Sexuell aktive Personen:** Mit dem Beginn sexueller Aktivitäten kann sich der erwartete Nutzen der Impfung verringern. Für bereits sexuell aktive Personen soll eine **Einzelfallentscheidung** getroffen werden.
+
+### 2. Klinische Wirksamkeit und Schutzspektrum
+*   **Schutz vor Impftypen:** Bei HPV-naiven Frauen bietet die vollständige Immunisierung einen **annähernd 100-prozentigen Schutz** vor der Entwicklung von CIN (Zervikale Intraepitheliale Neoplasie), die durch die Impftypen HPV 16 oder 18 verursacht werden. Ein teilweiser Schutz von 44 % ist bereits nach Erhalt von mindestens einer Dosis nachweisbar.
+*   **Kreuzprotektion:** Da die durch die Impfung induzierten Antikörpertiter deutlich über denen nach einer natürlichen Infektion liegen, besteht eine **teilweise Kreuzprotektion** gegen nahe verwandte Hochrisiko-HPV-Typen (wie HPV 31, 33, 45, 52 und 58).
+*   **Nonavalenter Impfstoff (9-fach):** Durch die Erweiterung um fünf zusätzliche Hochrisiko-Typen (31, 33, 45, 52, 58) wird eine theoretische Wirksamkeit von **90 % gegenüber dem invasiven Zervixkarzinom** und **75–85 % gegenüber CIN 2/3** erwartet.
+*   **Herdenimmunität:** Breite Impfprogramme erzielen eine nachweisbare Herdenimmunität, wodurch auch Infektionen und Genitalwarzen bei nicht geimpften Frauen sowie heterosexuellen Partnern signifikant zurückgehen.
+
+### 3. Rolle bei bestehenden Erkrankungen und nach operativer Therapie
+*   **Keine therapeutische Wirkung:** Eine Behandlung bereits bestehender CIN oder invasiver Karzinome mittels Impfung ist **nicht wirksam** und wird daher nicht empfohlen.
+*   **Rezidivprophylaxe nach Konisation:** Es gibt jedoch deutliche Hinweise darauf, dass eine Impfung im Rahmen einer chirurgischen Therapie (wie einer Schlingenexzision) das **Risiko von Wiedererkrankungen (Rezidiven) signifikant vermindern** kann. In Studien an konisierten Frauen zeigte sich unter der nachfolgenden Impfung eine signifikante Reduktion von Rezidiven.
+
+### 4. Verhältnis zur Sekundärprävention (Screening)
+*   **Kein Ersatz für die Vorsorge:** Da die aktuellen Impfstoffe nicht alle onkogenen HPV-Typen abdecken können, müssen HPV-geimpfte Frauen **weiterhin lückenlos an den gesetzlichen Früherkennungsuntersuchungen teilnehmen**. In Deutschland wird die Früherkennungsuntersuchung unabhängig vom individuellen Impfstatus angeboten.
+
+***
+
+📊 Ich kann Ihnen ein übersichtliches Factsheet oder eine Tabelle erstellen, die die verschiedenen in der Leitlinie erwähnten Impfstoffe (bivalent, quadrivalent, nonavalent) mit ihren jeweiligen Zieltypen und Effektivitätsdaten direkt gegenüberstellt.",
+Q10,(Trap) Welche Thrombolyse-Therapie und welches Zeitfenster gelten beim akuten ischämischen Schlaganfall?,,
+Q11,(Trap) Welches Antibiotikum ist first-line bei einer ambulant erworbenen Pneumonie?,,
+Q12,(Trap) Welche medikamentöse Erstlinientherapie wird bei arterieller Hypertonie empfohlen?,,

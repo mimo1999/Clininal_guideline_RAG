@@ -203,6 +203,23 @@ class HybridSearcher:
         for c, emb in zip(candidates, embeddings):
             dup_idx = None
             for i, kept_emb in enumerate(kept_embeddings):
+                # Scoped to the SAME guideline -- this check exists for
+                # restatements of one guideline's own content (Langfassung
+                # vs. Patientenversion of the same fact), not for two
+                # DIFFERENT guidelines independently covering a related
+                # topic in their own intro/background sections. Confirmed a
+                # real false-positive this way on the 7-guideline corpus:
+                # 015-027OL's own dedicated HPV-vaccination section (5.1,
+                # the actually-expected answer for a real question) scored
+                # 0.93 similarity against 032-033OL's own separate
+                # HPV-vaccination intro (4.1) -- both guidelines cover the
+                # same general topic in their own words, which isn't the
+                # same as one restating the other. Without this guard, the
+                # higher-ranked chunk from whichever guideline happened to
+                # score better pre-dedup silently suppressed the other
+                # guideline's own, equally valid, differently-detailed answer.
+                if kept[i].get("guideline_id") != c.get("guideline_id"):
+                    continue
                 if float(emb @ kept_emb) > DEDUP_SIMILARITY_THRESHOLD:
                     dup_idx = i
                     break

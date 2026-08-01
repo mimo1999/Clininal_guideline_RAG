@@ -40,15 +40,19 @@ JUDGE_RESPONSE_SCHEMA = {
     "required": ["correct", "grounded", "begruendung"],
 }
 
-JUDGE_SYSTEM_PROMPT = """Du bist ein strenger Gutachter fuer medizinische Leitlinien-Antworten. Du bekommst eine Frage, eine Referenzantwort aus der Leitlinie, und eine vom System generierte Antwort. Beurteile:
-1. correct: Beantwortet die generierte Antwort die Kernfrage inhaltlich richtig, im Einklang mit der Referenzantwort (auch wenn anders formuliert oder ausfuehrlicher)?
-2. grounded: Enthaelt die generierte Antwort KEINE Behauptungen, die der Referenzantwort widersprechen oder offensichtlich erfunden wirken?
+JUDGE_SYSTEM_PROMPT = """Du bist ein strenger Gutachter fuer medizinische Leitlinien-Antworten. Du bekommst eine Frage, eine Referenzantwort aus der Leitlinie, den tatsaechlich abgerufenen Quelltext (die Chunks, auf deren Basis die Antwort generiert wurde), und eine vom System generierte Antwort. Beurteile:
+
+1. correct: Enthaelt die generierte Antwort die ZENTRALE(N) SACHAUSSAGE(N)/EMPFEHLUNG(EN) der Referenzantwort -- nicht nur ein thematisch verwandtes, plausibel klingendes Statement? Eine Antwort, die eine andere (auch fachlich richtige) Empfehlung zu einem angrenzenden Aspekt des Themas gibt, aber die in der Referenzantwort genannte SPEZIFISCHE Kernaussage nicht enthaelt, ist NICHT correct -- selbst wenn sie der Referenzantwort nicht widerspricht. "Im Einklang mit der Referenzantwort" heisst: die Kernaussage ist tatsaechlich enthalten (ggf. anders formuliert oder ausfuehrlicher), nicht nur "widerspricht ihr nicht".
+
+2. grounded: Wird jede sachliche Behauptung der generierten Antwort durch den bereitgestellten Quelltext UND/ODER die Referenzantwort gedeckt? Eine Behauptung, die weder im Quelltext noch in der Referenzantwort auffindbar ist, oder die einer von beiden widerspricht, zaehlt als NICHT gegruendet -- auch wenn sie plausibel klingt oder allgemein medizinisch korrekt ist.
 
 WICHTIG zu Quellenangaben: Die generierte Antwort enthaelt fast immer Klammerzusaetze wie "(Quelle 1)", "(Quelle 2, Quelle 5)" oder "(Source 1)". Das sind reine System-Zitiermarkierungen, die automatisch angehaengt werden, um zu zeigen welcher Retrieval-Treffer verwendet wurde -- sie sind KEINE inhaltliche Behauptung. Ignoriere diese Klammerzusaetze bei der grounded-Bewertung vollstaendig, auch wenn die Referenzantwort selbst keine Quellenangabe enthaelt. Eine Quellenangabe darf NIEMALS als Grund fuer grounded=false gewertet werden.
 
-Beispiel: Referenzantwort "X betraegt 5mg." / Generierte Antwort "X betraegt 5mg (Quelle 2)." -> grounded: true (die Quellenangabe ist keine Behauptung, also kein Widerspruch).
+Beispiel 1: Referenzantwort "X betraegt 5mg." / Generierte Antwort "X betraegt 5mg (Quelle 2)." -> grounded: true (die Quellenangabe ist keine Behauptung, also kein Widerspruch).
 
-Nur echte inhaltliche Widersprueche oder erfundene Fakten (z.B. falsche Zahlen, falsche Empfehlungen, zusaetzliche medizinische Behauptungen, die nicht in der Leitlinie stehen) zaehlen als nicht gegruendet. Zusaetzliche, plausible Detailinformationen aus der Leitlinie, die die Referenzantwort nicht widerlegen, zaehlen ebenfalls NICHT als ungegruendet.
+Beispiel 2 (WICHTIG -- Abgrenzung correct vs. "widerspricht nicht"): Frage "Was ist das empfohlene Vorgehen bei Befund Y?" / Referenzantwort "Wiederholung von Test Z nach 12 Monaten statt sofortiger Behandlung W." / Generierte Antwort "Bei positivem Test soll ohne Verzoegerung eine andere Untersuchung erfolgen; eine direkte Ueberweisung zu W wird nicht empfohlen." -> correct: FALSE. Die generierte Antwort widerspricht der Referenz zwar nicht direkt, nennt aber die konkrete Empfehlung (Wiederholung von Z nach 12 Monaten) an keiner Stelle -- sie beantwortet eine verwandte, aber andere Frage. Nur "nicht widersprechen" reicht fuer correct NICHT aus.
+
+Nur echte inhaltliche Widersprueche oder erfundene Fakten (z.B. falsche Zahlen, falsche Empfehlungen, zusaetzliche medizinische Behauptungen, die weder im Quelltext noch in der Leitlinie stehen) zaehlen als nicht gegruendet. Zusaetzliche, plausible Detailinformationen, die sich im bereitgestellten Quelltext wiederfinden und die Referenzantwort nicht widerlegen, zaehlen NICHT als ungegruendet.
 
 Antworte NUR mit einem JSON-Objekt, ohne weitere Erklaerung, in genau diesem Format:
 {"correct": true, "grounded": true, "begruendung": "kurze Begruendung"}"""
@@ -62,10 +66,22 @@ class JudgeVerdict:
     raw: str
 
 
-def judge_answer(question: str, reference_answer: str, generated_answer: str) -> JudgeVerdict:
+def judge_answer(question: str, reference_answer: str, generated_answer: str, retrieved_context: str = "") -> JudgeVerdict:
+    """retrieved_context: the actual retrieved chunk text the generator was
+    given (joined), so `grounded` can be checked against real evidence
+    instead of only against the fixed reference_answer string -- without
+    this, the judge has no way to tell "plausible but off-topic" from
+    "actually supported by what was retrieved" (confirmed a real gap this
+    way: a generated answer citing an unrelated section's general principle
+    was rated grounded=true purely because it didn't contradict the
+    reference, never having been checked against the source text it claimed
+    to draw from). Optional/defaults to "" for callers that don't have it
+    handy -- degrades to the reference-only check, not a hard requirement."""
+    context_block = f"\n\nAbgerufener Quelltext (Basis der generierten Antwort):\n{retrieved_context}" if retrieved_context else ""
     user_prompt = f"""Frage: {question}
 
 Referenzantwort: {reference_answer}
+{context_block}
 
 Generierte Antwort: {generated_answer}
 

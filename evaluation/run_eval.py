@@ -160,8 +160,9 @@ def phase_b_generate_and_judge() -> list[dict]:
 
         if q.reference_answer and not answer.refused:
             tracker.set_stage(f"Q{q.id}:judging")
+            retrieved_context = "\n\n---\n\n".join(c.get("text", "") for c in result.chunks)
             with tracing.trace_judge(trace, GENERATION_MODEL_NAME, q.question, q.reference_answer, answer.text) as jgen:
-                verdict = judge_answer(q.question, q.reference_answer, answer.text)
+                verdict = judge_answer(q.question, q.reference_answer, answer.text, retrieved_context)
                 if jgen is not None:
                     jgen.update(output={"correct": verdict.correct, "grounded": verdict.grounded, "reasoning": verdict.reasoning})
             row["judge_correct"] = verdict.correct

@@ -19,6 +19,10 @@ data_corpus/eval_retrieval_cache.json
 data_corpus/eval_results*_full.json
 
 # Only README.md is shipped -- every other markdown file (design logs,
-# results docs, parsed-PDF sidecars) is excluded from the release.
+# results docs, parsed-PDF sidecars) is excluded from the release, EXCEPT
+# the curated eval-result reports below (cloud_run_results/, local_run_results/)
+# -- deliberate, kept deliverables, not incidental generated docs.
 *.md
 !README.md
+!cloud_run_results/*.md
+!local_run_results/*.md
