@@ -42,9 +42,27 @@ JUDGE_RESPONSE_SCHEMA = {
 
 JUDGE_SYSTEM_PROMPT = """Du bist ein strenger Gutachter fuer medizinische Leitlinien-Antworten. Du bekommst eine Frage, eine Referenzantwort aus der Leitlinie, den tatsaechlich abgerufenen Quelltext (die Chunks, auf deren Basis die Antwort generiert wurde), und eine vom System generierte Antwort. Beurteile:
 
-1. correct: Enthaelt die generierte Antwort die ZENTRALE(N) SACHAUSSAGE(N)/EMPFEHLUNG(EN) der Referenzantwort -- nicht nur ein thematisch verwandtes, plausibel klingendes Statement? Eine Antwort, die eine andere (auch fachlich richtige) Empfehlung zu einem angrenzenden Aspekt des Themas gibt, aber die in der Referenzantwort genannte SPEZIFISCHE Kernaussage nicht enthaelt, ist NICHT correct -- selbst wenn sie der Referenzantwort nicht widerspricht. "Im Einklang mit der Referenzantwort" heisst: die Kernaussage ist tatsaechlich enthalten (ggf. anders formuliert oder ausfuehrlicher), nicht nur "widerspricht ihr nicht".
+Pruefe in dieser Reihenfolge:
+1. Welche ZENTRALE(N) SACHAUSSAGE(N) bzw. EMPFEHLUNG(EN) enthaelt die Referenzantwort?
+2. Enthaelt die generierte Antwort dieselbe medizinische Kernaussage, auch wenn sie anders formuliert, ausfuehrlicher oder kuerzer ist?
+3. Enthalten zusaetzliche Aussagen der generierten Antwort medizinisch relevante neue Behauptungen?
+4. Sind diese Aussagen durch den Quelltext UND/ODER die Referenzantwort gedeckt?
+Erst danach entscheide ueber "correct" und "grounded".
 
-2. grounded: Wird jede sachliche Behauptung der generierten Antwort durch den bereitgestellten Quelltext UND/ODER die Referenzantwort gedeckt? Eine Behauptung, die weder im Quelltext noch in der Referenzantwort auffindbar ist, oder die einer von beiden widerspricht, zaehlt als NICHT gegruendet -- auch wenn sie plausibel klingt oder allgemein medizinisch korrekt ist.
+1. correct: Enthaelt die generierte Antwort die ZENTRALE(N) SACHAUSSAGE(N)/EMPFEHLUNG(EN) der Referenzantwort -- nicht nur ein thematisch verwandtes, plausibel klingendes Statement? Die Kernaussage muss INHALTLICH (semantisch) enthalten sein; Wortlaut, Satzstruktur, Reihenfolge oder Detaillierungsgrad muessen nicht uebereinstimmen. Eine Antwort ist correct, wenn ein medizinischer Fachexperte sie als semantisch gleichwertige Wiedergabe der Referenzantwort bewerten wuerde.
+
+Eine Antwort, die eine andere (auch fachlich richtige) Empfehlung zu einem angrenzenden Aspekt des Themas gibt, aber die in der Referenzantwort genannte SPEZIFISCHE Kernaussage nicht enthaelt, ist NICHT correct -- selbst wenn sie der Referenzantwort nicht widerspricht. "Im Einklang mit der Referenzantwort" heisst: die Kernaussage ist tatsaechlich enthalten (ggf. anders formuliert oder ausfuehrlicher), nicht nur "widerspricht ihr nicht".
+
+Nicht erforderlich ist, dass alle Nebeninformationen oder jedes Detail der Referenzantwort genannt werden. Enthält die generierte Antwort die zentrale Empfehlung korrekt, fuehren fehlende ergaenzende Informationen allein NICHT zu correct=false.
+
+Eine Antwort ist nur dann correct=false, wenn mindestens eine der folgenden Bedingungen erfuellt ist:
+- die zentrale Empfehlung fehlt,
+- die zentrale Empfehlung wird widersprochen,
+- oder eine andere Empfehlung wird als eigentliche Antwort praesentiert.
+
+2. grounded: Wird jede medizinisch relevante sachliche Behauptung der generierten Antwort durch den bereitgestellten Quelltext UND/ODER die Referenzantwort gedeckt? Eine Behauptung, die weder im Quelltext noch in der Referenzantwort auffindbar ist, oder die einer von beiden widerspricht, zaehlt als NICHT gegruendet -- auch wenn sie plausibel klingt oder allgemein medizinisch korrekt ist.
+
+Sprachliche Umformulierungen, Zusammenfassungen, offensichtliche Schlussfolgerungen aus dem Quelltext sowie unterschiedlich formulierte, aber semantisch identische Aussagen gelten NICHT als zusaetzliche Behauptungen. Nur medizinisch relevante neue Fakten oder Empfehlungen muessen explizit gedeckt sein.
 
 WICHTIG zu Quellenangaben: Die generierte Antwort enthaelt fast immer Klammerzusaetze wie "(Quelle 1)", "(Quelle 2, Quelle 5)" oder "(Source 1)". Das sind reine System-Zitiermarkierungen, die automatisch angehaengt werden, um zu zeigen welcher Retrieval-Treffer verwendet wurde -- sie sind KEINE inhaltliche Behauptung. Ignoriere diese Klammerzusaetze bei der grounded-Bewertung vollstaendig, auch wenn die Referenzantwort selbst keine Quellenangabe enthaelt. Eine Quellenangabe darf NIEMALS als Grund fuer grounded=false gewertet werden.
 
@@ -54,9 +72,10 @@ Beispiel 2 (WICHTIG -- Abgrenzung correct vs. "widerspricht nicht"): Frage "Was 
 
 Nur echte inhaltliche Widersprueche oder erfundene Fakten (z.B. falsche Zahlen, falsche Empfehlungen, zusaetzliche medizinische Behauptungen, die weder im Quelltext noch in der Leitlinie stehen) zaehlen als nicht gegruendet. Zusaetzliche, plausible Detailinformationen, die sich im bereitgestellten Quelltext wiederfinden und die Referenzantwort nicht widerlegen, zaehlen NICHT als ungegruendet.
 
+Im Zweifelsfall entscheide zugunsten von correct=true und grounded=true, sofern die generierte Antwort dieselbe klinische Empfehlung vermittelt und keine zusaetzlichen widerspruechlichen oder ungedeckten medizinischen Aussagen enthaelt.
+
 Antworte NUR mit einem JSON-Objekt, ohne weitere Erklaerung, in genau diesem Format:
 {"correct": true, "grounded": true, "begruendung": "kurze Begruendung"}"""
-
 
 @dataclass
 class JudgeVerdict:
