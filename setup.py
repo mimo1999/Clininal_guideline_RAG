@@ -86,6 +86,20 @@ def step_install(skip: bool) -> None:
         print(f"WARNING: pip install exited with code {rc} -- continuing anyway; "
               f"some steps below may fail if a required package is missing.")
 
+    # This project never uses audio, but some environments (Google Colab)
+    # ship a preinstalled torchaudio -- if it's CUDA-mismatched against
+    # whatever torch requirements.txt just installed, transformers'
+    # audio_utils.py crashes hard the moment docling's layout model loads
+    # (RTDetrImageProcessor pulls in that import chain). Uninstalling it here
+    # is the actual fix, not pinning a matching version: transformers guards
+    # that import behind `if is_torchaudio_available(): import torchaudio`,
+    # and that check is a metadata-only importlib.util.find_spec() lookup, so
+    # with torchaudio simply absent the whole import is skipped cleanly no
+    # matter what CUDA build torch resolved to (dev_logs.md Entry 23).
+    # Best-effort: `pip uninstall` exits nonzero if the package was never
+    # installed, which is the common case outside Colab and not an error.
+    _run([sys.executable, "-m", "pip", "uninstall", "-y", "torchaudio"])
+
 
 def step_unzip_chroma() -> None:
     _step("2) Vector index (Chroma)")

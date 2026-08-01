@@ -10,22 +10,26 @@
 # torch: pinned version below installs a CPU-only build on most platforms.
 # If you have an NVIDIA GPU, install the matching CUDA build instead from
 # https://pytorch.org/get-started/locally/, e.g.
-# `pip install torch==2.13.0 torchaudio==2.13.0 --index-url https://download.pytorch.org/whl/cu126`
+# `pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cu126`
 # -- the retrieval/generation code auto-detects CUDA and falls back to CPU
-# cleanly either way (slower, not broken). Always install torch and
-# torchaudio TOGETHER, pinned to the same version, from the same index --
-# transformers unconditionally imports torchaudio deep in an import chain
-# docling's layout model triggers (transformers.audio_utils, pulled in via
-# RTDetrImageProcessor), even though this project never uses audio. On a
-# machine that already has a matched torch/torchvision/torchaudio CUDA
-# triplet preinstalled (e.g. Google Colab), installing torch alone without
-# also pinning torchaudio replaces torch but leaves the old torchaudio
-# build in place, producing a "PyTorch and TorchAudio were compiled with
-# different CUDA versions" RuntimeError on the very first docling call.
-# Confirmed directly on Colab: torch==2.13.0 resolved to a cu130 build,
-# stock torchaudio was still cu128, crashed ingestion immediately.
+# cleanly either way (slower, not broken).
+#
+# Deliberately NOT installing torchaudio (this project never uses audio):
+# transformers' audio_utils.py guards its torchaudio import behind
+# `if is_torchaudio_available(): import torchaudio`, and that check is a pure
+# importlib.util.find_spec() metadata lookup -- it never executes torchaudio's
+# own module code. So as long as torchaudio ISN'T installed, the whole import
+# is skipped cleanly, no matter what CUDA build torch resolves to. setup.py
+# actively uninstalls any pre-existing torchaudio for exactly this reason (see
+# dev_logs.md Entry 23) -- some environments (e.g. Google Colab) ship one
+# preinstalled, and a *present-but-CUDA-mismatched* torchaudio crashes this
+# same import chain with "PyTorch and TorchAudio were compiled with different
+# CUDA versions" the moment docling's layout model (which pulls in
+# RTDetrImageProcessor, which triggers this chain) loads. An earlier attempt
+# to fix this by pinning a matching torchaudio version instead of removing it
+# turned out to be both unnecessary and unworkable -- no torchaudio release
+# exists for torch==2.13.0 at all (latest available was 2.11.0).
 torch==2.13.0
-torchaudio==2.13.0
 
 transformers==5.14.1
 sentence-transformers==5.6.1
