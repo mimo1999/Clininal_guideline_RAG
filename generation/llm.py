@@ -147,6 +147,7 @@ def generate(
     do_sample: bool = False,
     format: object = None,
 ) -> str:
+    import gc
     # `format` (Ollama's JSON-schema output constraint, see
     # generation/ollama_llm.py) has no direct transformers equivalent wired
     # in here -- accepted for interface compatibility with callers (e.g.
@@ -172,7 +173,21 @@ def generate(
             **inputs, max_new_tokens=max_new_tokens,
             do_sample=True, temperature=0.7, top_p=0.8, top_k=20,
         )
-        return tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
+        result = tokenizer.decode(outputs[0][inputs.input_ids.shape[1]:], skip_special_tokens=True).strip()
+        # Explicitly release input/output tensors so their GPU memory is
+        # returned to the allocator immediately, before the next question's
+        # generate() call. Without this, fragmentation accumulates across
+        # the 9 answerable questions and exhausts the available headroom
+        # (confirmed OOM at Q7 on a 14.56GB card, 42MB free at failure point).
+        del inputs, outputs
+        gc.collect()
+        try:
+            import torch
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+        except ImportError:
+            pass
+        return result
 
     processor, model = _load_generator()
     inputs = processor.apply_chat_template(
@@ -183,4 +198,15 @@ def generate(
     outputs = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=do_sample)
     response = processor.decode(outputs[0][input_len:], skip_special_tokens=False)
     parsed = processor.parse_response(response, prefix=inputs["input_ids"])
-    return str(parsed.get("content", "")).strip() if isinstance(parsed, dict) else str(parsed).strip()
+    result = str(parsed.get("content", "")).strip() if isinstance(parsed, dict) else str(parsed).strip()
+    # Same tensor cleanup as the judge path above -- prevents fragmented
+    # allocations from accumulating across the Phase B question loop.
+    del inputs, outputs
+    gc.collect()
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    except ImportError:
+        pass
+    return result
