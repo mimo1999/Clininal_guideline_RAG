@@ -24,7 +24,7 @@ Results from running the brief's 12-question set (9 answerable, 3 traps) through
 | Role | Cloud run | Local run |
 |---|---|---|
 | Generator | `gemma4:31b-cloud` (Ollama cloud) | `google/gemma-4-E2B-it` (transformers) |
-| Judge | `nemotron-3-nano:30b-cloud` (Ollama cloud) | `Qwen/Qwen3.5-2B` (transformers) |
+| Judge | `nemotron-3-super:cloud` (Ollama cloud) | `Qwen/Qwen3.5-2B` (transformers) |
 | Dense embedder | `ibm-granite/granite-embedding-278m-multilingual` (shared, both runs) | |
 | Cross-encoder reranker | `cross-encoder/mmarco-mMiniLMv2-L12-H384-v1` (shared, both runs) | |
 
@@ -32,19 +32,19 @@ Results from running the brief's 12-question set (9 answerable, 3 traps) through
 
 ## Results
 
-Retrieval is identical across both runs (same index, same queries), so Recall/NDCG match exactly; only generation/judging differ between cloud and local.
+Retrieval uses the same index and queries across both runs, with minor cross-encoder rank shifts on boundary chunks (e.g. Q9 target chunk at rank 2 in Cloud vs rank 5 in Local; Q8 target chunk unranked in top-10 in Cloud vs rank 8 in Local).
 
-| Q# | Kind | Refused | Recall@3 | Recall@5 | NDCG@5 | NDCG@10 | Judge correct (cloud) | Judge correct (local) |
-|----|------|---------|----------|----------|--------|---------|:---:|:---:|
-| 1 | gold | False | True | True | 1.0 | 1.0 | True | True |
-| 2 | gold | False | True | True | 1.0 | 1.0 | True | True |
-| 3 | gold | False | True | True | 0.631 | 0.631 | False | False |
-| 4 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
-| 5 | self_labeled | False | True | True | 1.0 | 1.0 | False | False |
-| 6 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
-| 7 | self_labeled | False | True | True | 0.5 | 0.5 | True | True |
-| 8 | self_labeled | False | False | False | 0.0 | 0.0 | True | True |
-| 9 | self_labeled | False | True | True | 0.5 | 0.5 | True | True |
+| Q# | Kind | Refused | Recall@3 (C / L) | Recall@5 | NDCG@5 (C / L) | NDCG@10 (C / L) | Judge correct (Cloud) | Judge correct (Local) |
+|----|------|---------|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | gold | False | True / True | True | 1.000 / 1.000 | 1.000 / 1.000 | True | True |
+| 2 | gold | False | True / True | True | 1.000 / 1.000 | 1.000 / 1.000 | True | True |
+| 3 | gold | False | True / True | True | 0.631 / 0.631 | 0.631 / 0.631 | False | True |
+| 4 | self_labeled | False | True / True | True | 1.000 / 1.000 | 1.000 / 1.000 | True | True |
+| 5 | self_labeled | False | True / True | True | 1.000 / 1.000 | 1.000 / 1.000 | False | True |
+| 6 | self_labeled | False | True / True | True | 1.000 / 1.000 | 1.000 / 1.000 | True | True |
+| 7 | self_labeled | False | True / True | True | 0.500 / 0.500 | 0.500 / 0.500 | True | True |
+| 8 | self_labeled | False | False / False | False | 0.000 / 0.000 | 0.000 / 0.356 | True | True |
+| 9 | self_labeled | False | True / False | True | 0.500 / 0.387 | 0.500 / 0.387 | True | False |
 | 10 | trap | True | — | — | — | — | — | — |
 | 11 | trap | True | — | — | — | — | — | — |
 | 12 | trap | True | — | — | — | — | — | — |
@@ -53,13 +53,13 @@ Retrieval is identical across both runs (same index, same queries), so Recall/ND
 
 | Metric | Cloud | Local | Definition |
 |---|---|---|---|
-| Recall@3 | 0.889 | 0.889 | Fraction of answerable questions (1–9) whose correct evidence appears in the top-3 post-rerank chunks. |
+| Recall@3 | 0.889 | 0.778 | Fraction of answerable questions (1–9) whose correct evidence appears in the top-3 post-rerank chunks. |
 | Recall@5 | 0.889 | 0.889 | Same, top-5. |
-| NDCG@5 | 0.737 | 0.737 | Rewards ranking the correct passage higher, not just hit/miss (see README). |
-| NDCG@10 | 0.737 | 0.737 | Same, top-10. |
-| Answer accuracy rate | **0.889** | **—** | Fraction of answerable questions judged both correct and grounded (no hallucination). |
+| NDCG@5 | 0.737 | 0.724 | Rewards ranking the correct passage higher, not just hit/miss (see README). |
+| NDCG@10 | 0.737 | 0.764 | Same, top-10. |
+| Answer accuracy rate | **0.778** | **0.889** | Fraction of answerable questions judged both correct and grounded (no hallucination). |
 | Refusal correctness rate | **1.0** | **1.0** | Fraction of trap questions (10–12) correctly refused. A system that confidently answers a trap fails this regardless of other scores. |
 
 ## Takeaway
 
-With strictly untuned section annotations, the pipeline achieves **88.9% Recall@3/5** and an **NDCG@5 of 0.737** on the core 9 questions. Generative answer accuracy on the cloud run is restored to **0.889** (8 out of 9 correct), and refusal correctness remains at **100%**.
+With strictly untuned section annotations, the pipeline achieves **88.9% Recall@3/5** and an **NDCG@5 of 0.737** on the core 9 questions. Generative answer accuracy on the cloud run with the strict `nemotron-3-super:cloud` judge is **0.778** (7 out of 9 correct), and refusal correctness remains at **100%**.

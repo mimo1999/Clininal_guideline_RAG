@@ -23,7 +23,7 @@ from retrieval.hybrid_search import SearchResult
 from retrieval.index_store import load_all_chunks
 
 GENERATOR_MODEL = "gemma4:31b-cloud"
-JUDGE_MODEL = "nemotron-3-nano:30b-cloud"
+JUDGE_MODEL = "nemotron-3-super:cloud"
 
 RESULTS_JSON_PATH = RESULTS_DIR / "eval_results_cloud_full.json"
 RESULTS_MD_PATH = RESULTS_DIR / "eval_results_cloud.md"
