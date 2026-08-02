@@ -6,51 +6,35 @@
 <title>Clinical Guideline Assistant</title>
 <style>
   :root {
+    --bg-gradient: linear-gradient(to right, #ddc1ff 0%, #bacfff 50%, #4ef1ff 100%);
     --bg: #f4f6f8;
-    --surface: #ffffff;
-    --surface-alt: #eef2f5;
-    --border: #dde3e8;
-    --text: #1c2b36;
-    --text-muted: #5f717e;
-    --primary: #0f5c73;
-    --primary-dark: #0b4657;
-    --primary-light: #e6f0f2;
-    --accent: #2a9d8f;
-    --warning-bg: #fff6e6;
+    --surface: rgba(255, 255, 255, 0.85);
+    --surface-alt: rgba(255, 255, 255, 0.65);
+    --border: rgba(255, 255, 255, 0.4);
+    --text: #202124;
+    --text-muted: #5f6368;
+    --primary: #2a2b2f;
+    --primary-dark: #1f2023;
+    --primary-light: rgba(42, 43, 47, 0.1);
+    --accent: #40e0ff;
+    --warning-bg: rgba(255, 246, 230, 0.9);
     --warning-border: #e0a72c;
     --warning-text: #7a5200;
     --danger: #c0392b;
     --danger-dark: #a5311f;
-    --shadow: 0 2px 10px rgba(15, 40, 50, 0.08);
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     --radius: 12px;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0f1720;
-      --surface: #16212b;
-      --surface-alt: #1c2933;
-      --border: #2b3946;
-      --text: #e6edf1;
-      --text-muted: #93a4b0;
-      --primary: #2a9d8f;
-      --primary-dark: #218075;
-      --primary-light: #17323375;
-      --warning-bg: #3a2f14;
-      --warning-border: #b8860b;
-      --warning-text: #f0cf7c;
-      --danger: #e0574a;
-      --danger-dark: #c0453a;
-      --shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
-    }
-  }
+
 
   * { box-sizing: border-box; }
 
   html, body {
     margin: 0;
     height: 100%;
-    background: var(--bg);
+    background: var(--bg-gradient);
+    background-attachment: fixed;
     color: var(--text);
     font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Inter", Roboto, Arial, sans-serif;
   }
@@ -67,6 +51,8 @@
     justify-content: space-between;
     padding: 14px 24px;
     background: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow);
     z-index: 10;
@@ -225,6 +211,8 @@
 
   .msg-row.assistant .bubble {
     background: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border);
     border-bottom-left-radius: 3px;
     box-shadow: var(--shadow);
@@ -290,7 +278,7 @@
     display: flex;
     justify-content: center;
     padding: 14px 20px 20px;
-    background: linear-gradient(to top, var(--bg) 60%, transparent);
+    background: transparent;
   }
 
   .input-inner {
@@ -300,6 +288,8 @@
     align-items: flex-end;
     gap: 10px;
     background: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     box-shadow: var(--shadow);

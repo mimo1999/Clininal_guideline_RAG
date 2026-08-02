@@ -111,7 +111,7 @@ def _from_pretrained_with_device_fallback(model_cls, model_id: str, torch_dtype=
     than erroring out on a machine "auto" judged (rightly or wrongly) as too
     tight."""
     try:
-        return model_cls.from_pretrained(model_id, torch_dtype=torch_dtype, device_map="auto")
+        return model_cls.from_pretrained(model_id, torch_dtype=torch_dtype, device_map="auto", offload_buffers=True)
     except ValueError as e:
         if "offload" not in str(e).lower():
             raise
