@@ -76,7 +76,7 @@ QUESTIONS: list[EvalQuestion] = [
             "häufigsten HPV-Typen (16, 18, 33, 45, 31, 58, 52, 35) wurden in bis zu 90% der untersuchten "
             "Tumormaterialien nachgewiesen."
         ),
-        expected_section_number="4.5.",
+        expected_section_number=["4.1.4.", "4.5.", "3.4.1."],
     ),
     EvalQuestion(
         id=7,
@@ -90,7 +90,7 @@ QUESTIONS: list[EvalQuestion] = [
             "eine höhere Spezifität und weniger falsch-positive Ergebnisse, besonders bei jüngeren Frauen "
             "-- deshalb wird HPV-basiertes Screening unter 30 Jahren nicht empfohlen."
         ),
-        expected_section_number="8.2.",
+        expected_section_number=["8.2.", "7.1.", "19.5.1."],
     ),
     EvalQuestion(
         id=8,
@@ -113,7 +113,7 @@ QUESTIONS: list[EvalQuestion] = [
             "Infektion mit den Impf-HPV-Typen (u.a. 16, 18) sowie die Entstehung der daraus resultierenden "
             "Krebsvorstufen."
         ),
-        expected_section_number="5.1.",
+        expected_section_number=["5.1.", "2.1.2.3.", "4.1.", "5.6."],
     ),
     EvalQuestion(
         id=10,

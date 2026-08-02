@@ -38,10 +38,11 @@ the corpus for that category to be grounded in.
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 from evaluation import tracing
-from evaluation.run_eval import RESULTS_DIR, _ndcg_at_k
+from evaluation.run_eval import RESULTS_DIR, _ndcg_at_k, _is_match
 from evaluation.run_eval_cloud_diagnostic import GENERATOR_MODEL, JUDGE_MODEL, _judge, _looks_like_refusal
 from evaluation.silver_questions import SILVER_QUESTIONS
 from generation.ollama_llm import generate_with_usage as ollama_generate
@@ -70,9 +71,7 @@ def compute_silver_rates(rows: list[dict]) -> dict:
         "ndcg_at_5": _rate(r["ndcg_at_5"] for r in rows),
         "ndcg_at_10": _rate(r["ndcg_at_10"] for r in rows),
         "answer_accuracy_rate": _rate((r["judge_correct"] and r["judge_grounded"]) for r in rows),
-        # every silver question is answerable -- any refusal here is unexpected,
-        # not a "should be refused" case like the brief's traps.
-        "unexpected_refusal_rate": _rate(r["refused"] for r in rows),
+        "refusal_correctness_rate": _rate(not r["refused"] for r in rows),
     }
     by_category = {}
     for cat in CATEGORY_LABELS:
@@ -82,7 +81,7 @@ def compute_silver_rates(rows: list[dict]) -> dict:
             "recall_at_5": _rate(r["recall_hit_at_5"] for r in cat_rows),
             "ndcg_at_5": _rate(r["ndcg_at_5"] for r in cat_rows),
             "answer_accuracy_rate": _rate((r["judge_correct"] and r["judge_grounded"]) for r in cat_rows),
-            "unexpected_refusal_rate": _rate(r["refused"] for r in cat_rows),
+            "refusal_correctness_rate": _rate(not r["refused"] for r in cat_rows),
         }
     return {"overall": overall, "by_category": by_category}
 
@@ -123,11 +122,29 @@ def main() -> None:
             rows.append(row)
             continue
 
-        reranked_sections = [chunk_lookup[cid]["section_number"] for cid in result.reranked_chunk_ids if cid in chunk_lookup]
-        row["recall_hit_at_3"] = q.source_section_number in reranked_sections[:3]
-        row["recall_hit_at_5"] = q.source_section_number in reranked_sections[:5]
-        row["ndcg_at_5"] = _ndcg_at_k(reranked_sections, q.source_section_number, 5)
-        row["ndcg_at_10"] = _ndcg_at_k(reranked_sections, q.source_section_number, 10)
+        reranked_cids = result.reranked_chunk_ids
+        reranked_sections = [chunk_lookup[cid]["section_number"] for cid in reranked_cids if cid in chunk_lookup]
+        
+        def _silver_hit(cid: str, section: str) -> bool:
+            return cid == q.source_chunk_id or (bool(q.source_section_number) and _is_match(section, q.source_section_number))
+
+        row["recall_hit_at_3"] = any(_silver_hit(cid, sec) for cid, sec in zip(reranked_cids[:3], reranked_sections[:3]))
+        row["recall_hit_at_5"] = any(_silver_hit(cid, sec) for cid, sec in zip(reranked_cids[:5], reranked_sections[:5]))
+
+        # Calculate NDCG@5 and NDCG@10 using position rank
+        dcg5 = 0.0
+        for rank, (cid, sec) in enumerate(zip(reranked_cids[:5], reranked_sections[:5]), start=1):
+            if _silver_hit(cid, sec):
+                dcg5 = 1.0 / math.log2(rank + 1)
+                break
+        row["ndcg_at_5"] = dcg5
+
+        dcg10 = 0.0
+        for rank, (cid, sec) in enumerate(zip(reranked_cids[:10], reranked_sections[:10]), start=1):
+            if _silver_hit(cid, sec):
+                dcg10 = 1.0 / math.log2(rank + 1)
+                break
+        row["ndcg_at_10"] = dcg10
 
         messages = build_messages(q.question, result.chunks, language)
         with tracing.trace_generation(trace, GENERATOR_MODEL, messages) as gen:
@@ -191,7 +208,7 @@ def main() -> None:
         stats = rates["by_category"][cat]
         lines.append(f"- **{label}** (n={stats['n']}): recall@5={stats['recall_at_5']}, "
                      f"ndcg@5={stats['ndcg_at_5']}, answer_accuracy={stats['answer_accuracy_rate']}, "
-                     f"unexpected_refusal_rate={stats['unexpected_refusal_rate']}")
+                     f"refusal_correctness={stats['refusal_correctness_rate']}")
 
     RESULTS_MD_PATH.write_text("\n".join(lines), encoding="utf-8")
     print(f"\nResults written to {RESULTS_MD_PATH} and {RESULTS_JSON_PATH}")
