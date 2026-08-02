@@ -26,7 +26,7 @@ Retrieval is identical across both runs (same index, same queries), so Recall/ND
 | 5 | self_labeled | False | True | True | 1.0 | 1.0 | False | True |
 | 6 | self_labeled | False | False | False | 0.0 | 0.0 | True | True |
 | 7 | self_labeled | False | True | True | 0.5 | 0.5 | True | True |
-| 8 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
+| 8 | self_labeled | False | True | True | 1.0 | 1.0 | True | False |
 | 9 | self_labeled | False | True | True | 0.5 | 0.5 | True | True |
 | 10 | trap | True | — | — | — | — | — | — |
 | 11 | trap | True | — | — | — | — | — | — |
@@ -40,7 +40,7 @@ Retrieval is identical across both runs (same index, same queries), so Recall/ND
 | Recall@5 | 0.889 | 0.889 | Same, top-5. |
 | NDCG@5 | 0.737 | 0.737 | Rewards ranking the correct passage higher, not just hit/miss (see README). |
 | NDCG@10 | 0.737 | 0.737 | Same, top-10. |
-| Answer accuracy rate | **0.889** | **0.889** | Fraction of answerable questions judged both correct and grounded (no hallucination). |
+| Answer accuracy rate | **0.889** | **0.778** | Fraction of answerable questions judged both correct and grounded (no hallucination). |
 | Refusal correctness rate | **1.0** | **1.0** | Fraction of trap questions (10–12) correctly refused. A system that confidently answers a trap fails this regardless of other scores. |
 
 ## Takeaway
