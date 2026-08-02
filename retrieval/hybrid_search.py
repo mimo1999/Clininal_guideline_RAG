@@ -168,7 +168,7 @@ class HybridSearcher:
         if query_language == "unknown":
             return candidates
         adjusted = [
-            {**c, "rerank_score": c["rerank_score"] + (LANGUAGE_BONUS if c.get("doc_language") == query_language else 0.0)}
+            {**c, "rerank_score": c["rerank_score"] + (LANGUAGE_BONUS if c.get("doc_language") == query_language else 0.0) + (0.05 if c.get("source_priority", 3) == 1 else 0.0)}
             for c in candidates
         ]
         adjusted.sort(key=lambda c: c["rerank_score"], reverse=True)

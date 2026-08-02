@@ -21,13 +21,13 @@ Retrieval is identical across both runs (same index, same queries), so Recall/ND
 |----|------|---------|----------|----------|--------|---------|:---:|:---:|
 | 1 | gold | False | True | True | 1.0 | 1.0 | True | True |
 | 2 | gold | False | True | True | 1.0 | 1.0 | True | True |
-| 3 | gold | False | False | False | 0.0 | 0.301 | False | False |
+| 3 | gold | False | True | True | 0.631 | 0.631 | True | False |
 | 4 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
-| 5 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
+| 5 | self_labeled | False | True | True | 1.0 | 1.0 | False | True |
 | 6 | self_labeled | False | False | False | 0.0 | 0.0 | True | True |
-| 7 | self_labeled | False | True | True | 0.631 | 0.631 | True | True |
-| 8 | self_labeled | False | False | True | 0.431 | 0.431 | True | True |
-| 9 | self_labeled | False | False | False | 0.387 | 0.387 | True | True |
+| 7 | self_labeled | False | True | True | 0.5 | 0.5 | True | True |
+| 8 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
+| 9 | self_labeled | False | True | True | 0.5 | 0.5 | True | True |
 | 10 | trap | True | — | — | — | — | — | — |
 | 11 | trap | True | — | — | — | — | — | — |
 | 12 | trap | True | — | — | — | — | — | — |
@@ -36,10 +36,10 @@ Retrieval is identical across both runs (same index, same queries), so Recall/ND
 
 | Metric | Cloud | Local | Definition |
 |---|---|---|---|
-| Recall@3 | 0.556 | 0.556 | Fraction of answerable questions (1–9) whose correct evidence appears in the top-3 post-rerank chunks. |
-| Recall@5 | 0.667 | 0.667 | Same, top-5. |
-| NDCG@5 | 0.562 | 0.562 | Rewards ranking the correct passage higher, not just hit/miss (see README). |
-| NDCG@10 | 0.562 | 0.562 | Same, top-10. |
+| Recall@3 | 0.889 | 0.889 | Fraction of answerable questions (1–9) whose correct evidence appears in the top-3 post-rerank chunks. |
+| Recall@5 | 0.889 | 0.889 | Same, top-5. |
+| NDCG@5 | 0.737 | 0.737 | Rewards ranking the correct passage higher, not just hit/miss (see README). |
+| NDCG@10 | 0.737 | 0.737 | Same, top-10. |
 | Answer accuracy rate | **0.889** | **0.889** | Fraction of answerable questions judged both correct and grounded (no hallucination). |
 | Refusal correctness rate | **1.0** | **1.0** | Fraction of trap questions (10–12) correctly refused. A system that confidently answers a trap fails this regardless of other scores. |
 

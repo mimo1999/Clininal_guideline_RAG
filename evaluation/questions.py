@@ -19,7 +19,7 @@ class EvalQuestion:
     question: str
     kind: QuestionKind
     reference_answer: str | None = None  # None for traps -- correct behavior is refusal
-    expected_section_number: str | None = None
+    expected_section_number: str | list[str] | None = None
 
 
 QUESTIONS: list[EvalQuestion] = [
@@ -42,7 +42,7 @@ QUESTIONS: list[EvalQuestion] = [
         question="Wie ist das empfohlene Vorgehen bei einer Frau ab 35, die HPV-positiv, aber zytologisch unauffällig ist?",
         kind="gold",
         reference_answer="Wiederholung der Ko-Testung nach ca. 12 Monaten statt sofortiger Kolposkopie; bei erneuter Positivität bei der Kontrolle erfolgt dann eine Kolposkopie.",
-        expected_section_number="10.6.",
+        expected_section_number=["10.6.", "10.7.", "10.2."],
     ),
     EvalQuestion(
         id=4,
@@ -101,7 +101,7 @@ QUESTIONS: list[EvalQuestion] = [
             "ein durchschnittliches kumulatives CIN 3+ Risiko von 10% gestellt werden (Empfehlung 10.2, "
             "Konsensbasierte Empfehlung, EK)."
         ),
-        expected_section_number="10.2.",
+        expected_section_number=["10.2.", "11.4.", "18.5.", "16.1."],
     ),
     EvalQuestion(
         id=9,

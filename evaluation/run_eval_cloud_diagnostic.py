@@ -15,7 +15,7 @@ from pathlib import Path
 
 from evaluation import tracing
 from evaluation.questions import QUESTIONS
-from evaluation.run_eval import RESULTS_DIR, RETRIEVAL_CACHE_PATH, _ndcg_at_k, compute_rates
+from evaluation.run_eval import RESULTS_DIR, RETRIEVAL_CACHE_PATH, _ndcg_at_k, compute_rates, _is_match
 from generation.ollama_llm import generate_with_usage as ollama_generate
 from generation.prompt import REFUSAL_STRINGS, build_context_block, build_messages, detect_query_language
 from evaluation.judge import JUDGE_SYSTEM_PROMPT, JUDGE_RESPONSE_SCHEMA
@@ -162,10 +162,10 @@ def main(compare_ragas: bool = False):
         if q.expected_section_number:
             reranked_sections = [chunk_lookup[cid]["section_number"] for cid in result.reranked_chunk_ids if cid in chunk_lookup]
             fused_sections = [chunk_lookup[cid]["section_number"] for cid in result.fused_chunk_ids if cid in chunk_lookup]
-            row["recall_hit_at_3"] = q.expected_section_number in reranked_sections[:3]
-            row["recall_hit_at_5"] = q.expected_section_number in reranked_sections[:5]
-            row["fused_recall_hit_at_3"] = q.expected_section_number in fused_sections[:3]
-            row["fused_recall_hit_at_5"] = q.expected_section_number in fused_sections[:5]
+            row["recall_hit_at_3"] = any(_is_match(sec, q.expected_section_number) for sec in reranked_sections[:3])
+            row["recall_hit_at_5"] = any(_is_match(sec, q.expected_section_number) for sec in reranked_sections[:5])
+            row["fused_recall_hit_at_3"] = any(_is_match(sec, q.expected_section_number) for sec in fused_sections[:3])
+            row["fused_recall_hit_at_5"] = any(_is_match(sec, q.expected_section_number) for sec in fused_sections[:5])
             row["ndcg_at_5"] = _ndcg_at_k(reranked_sections, q.expected_section_number, 5)
             row["ndcg_at_10"] = _ndcg_at_k(reranked_sections, q.expected_section_number, 10)
             row["fused_ndcg_at_5"] = _ndcg_at_k(fused_sections, q.expected_section_number, 5)

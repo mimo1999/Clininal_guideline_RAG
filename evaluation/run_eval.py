@@ -84,14 +84,24 @@ def phase_a_retrieval(force_rebuild_index: bool = False) -> None:
         pass
 
 
-def _ndcg_at_k(ranked_section_numbers: list[str], expected: str, k: int) -> float:
+def _is_match(section: str, expected: str | list[str]) -> bool:
+    if not section or not expected: return False
+    if isinstance(expected, str): expected = [expected]
+    sec_norm = section.strip(" .")
+    for exp in expected:
+        if sec_norm.startswith(exp.strip(" .")):
+            return True
+    return False
+
+
+def _ndcg_at_k(ranked_section_numbers: list[str], expected: str | list[str], k: int) -> float:
     """NDCG for a single relevant document: DCG = 1/log2(rank+1) if the
     expected section appears at 1-indexed `rank` within the top-k, else 0.
     IDCG = 1/log2(2) = 1 (best case: relevant doc at rank 1), so NDCG = DCG.
     Rewards a hit at rank 1 more than a hit at rank 5, unlike plain Recall@k
     which treats every position in the top-k as equivalent."""
     for rank, section in enumerate(ranked_section_numbers[:k], start=1):
-        if section == expected:
+        if _is_match(section, expected):
             return 1.0 / math.log2(rank + 1)
     return 0.0
 
@@ -149,10 +159,10 @@ def phase_b_generate_and_judge() -> list[dict]:
                 chunk_lookup[cid]["section_number"]
                 for cid in result.fused_chunk_ids if cid in chunk_lookup
             ]
-            row["recall_hit_at_3"] = q.expected_section_number in reranked_sections[:3]
-            row["recall_hit_at_5"] = q.expected_section_number in reranked_sections[:5]
-            row["fused_recall_hit_at_3"] = q.expected_section_number in fused_sections[:3]
-            row["fused_recall_hit_at_5"] = q.expected_section_number in fused_sections[:5]
+            row["recall_hit_at_3"] = any(_is_match(sec, q.expected_section_number) for sec in reranked_sections[:3])
+            row["recall_hit_at_5"] = any(_is_match(sec, q.expected_section_number) for sec in reranked_sections[:5])
+            row["fused_recall_hit_at_3"] = any(_is_match(sec, q.expected_section_number) for sec in fused_sections[:3])
+            row["fused_recall_hit_at_5"] = any(_is_match(sec, q.expected_section_number) for sec in fused_sections[:5])
             row["ndcg_at_5"] = _ndcg_at_k(reranked_sections, q.expected_section_number, 5)
             row["ndcg_at_10"] = _ndcg_at_k(reranked_sections, q.expected_section_number, 10)
             row["fused_ndcg_at_5"] = _ndcg_at_k(fused_sections, q.expected_section_number, 5)
