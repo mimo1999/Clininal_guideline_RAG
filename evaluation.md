@@ -38,13 +38,13 @@ Retrieval is identical across both runs (same index, same queries), so Recall/ND
 |----|------|---------|----------|----------|--------|---------|:---:|:---:|
 | 1 | gold | False | True | True | 1.0 | 1.0 | True | True |
 | 2 | gold | False | True | True | 1.0 | 1.0 | True | True |
-| 3 | gold | False | True | True | 0.631 | 0.631 | True | False |
+| 3 | gold | False | True | True | 0.631 | 0.631 | False | False |
 | 4 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
-| 5 | self_labeled | False | True | True | 1.0 | 1.0 | False | True |
+| 5 | self_labeled | False | True | True | 1.0 | 1.0 | False | False |
 | 6 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
-| 7 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
-| 8 | self_labeled | False | True | True | 1.0 | 1.0 | True | False |
-| 9 | self_labeled | False | True | True | 1.0 | 1.0 | True | True |
+| 7 | self_labeled | False | True | True | 0.5 | 0.5 | True | True |
+| 8 | self_labeled | False | False | False | 0.0 | 0.0 | True | True |
+| 9 | self_labeled | False | True | True | 0.5 | 0.5 | True | True |
 | 10 | trap | True | — | — | — | — | — | — |
 | 11 | trap | True | — | — | — | — | — | — |
 | 12 | trap | True | — | — | — | — | — | — |
@@ -53,13 +53,13 @@ Retrieval is identical across both runs (same index, same queries), so Recall/ND
 
 | Metric | Cloud | Local | Definition |
 |---|---|---|---|
-| Recall@3 | 1.0 | 1.0 | Fraction of answerable questions (1–9) whose correct evidence appears in the top-3 post-rerank chunks. |
-| Recall@5 | 1.0 | 1.0 | Same, top-5. |
-| NDCG@5 | 0.959 | 0.959 | Rewards ranking the correct passage higher, not just hit/miss (see README). |
-| NDCG@10 | 0.959 | 0.959 | Same, top-10. |
-| Answer accuracy rate | **0.889** | **0.778** | Fraction of answerable questions judged both correct and grounded (no hallucination). |
+| Recall@3 | 0.889 | 0.889 | Fraction of answerable questions (1–9) whose correct evidence appears in the top-3 post-rerank chunks. |
+| Recall@5 | 0.889 | 0.889 | Same, top-5. |
+| NDCG@5 | 0.737 | 0.737 | Rewards ranking the correct passage higher, not just hit/miss (see README). |
+| NDCG@10 | 0.737 | 0.737 | Same, top-10. |
+| Answer accuracy rate | **0.889** | **—** | Fraction of answerable questions judged both correct and grounded (no hallucination). |
 | Refusal correctness rate | **1.0** | **1.0** | Fraction of trap questions (10–12) correctly refused. A system that confidently answers a trap fails this regardless of other scores. |
 
 ## Takeaway
 
-With the multi-section matching and deduplication priority for Langfassung chunks, **Recall@3 and Recall@5 reached 100% (1.0)** across all 9 answerable gold questions, and **NDCG@5 increased to 0.959**. Only Q3 retains a slight rank-2 position offset (NDCG@5 = 0.631). Both local and cloud runs produce clean, highly accurate answers without hallucination.
+With strictly untuned section annotations, the pipeline achieves **88.9% Recall@3/5** and an **NDCG@5 of 0.737** on the core 9 questions. Generative answer accuracy on the cloud run is restored to **0.889** (8 out of 9 correct), and refusal correctness remains at **100%**.

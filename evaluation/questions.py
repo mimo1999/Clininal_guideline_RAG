@@ -42,7 +42,7 @@ QUESTIONS: list[EvalQuestion] = [
         question="Wie ist das empfohlene Vorgehen bei einer Frau ab 35, die HPV-positiv, aber zytologisch unauffällig ist?",
         kind="gold",
         reference_answer="Wiederholung der Ko-Testung nach ca. 12 Monaten statt sofortiger Kolposkopie; bei erneuter Positivität bei der Kontrolle erfolgt dann eine Kolposkopie.",
-        expected_section_number=["10.6.", "10.7.", "10.2."],
+        expected_section_number=["10.6.", "10.7."],
     ),
     EvalQuestion(
         id=4,
@@ -76,7 +76,7 @@ QUESTIONS: list[EvalQuestion] = [
             "häufigsten HPV-Typen (16, 18, 33, 45, 31, 58, 52, 35) wurden in bis zu 90% der untersuchten "
             "Tumormaterialien nachgewiesen."
         ),
-        expected_section_number=["4.1.4.", "4.5.", "3.4.1."],
+        expected_section_number=["4.1.4.", "4.5."],
     ),
     EvalQuestion(
         id=7,
@@ -90,7 +90,7 @@ QUESTIONS: list[EvalQuestion] = [
             "eine höhere Spezifität und weniger falsch-positive Ergebnisse, besonders bei jüngeren Frauen "
             "-- deshalb wird HPV-basiertes Screening unter 30 Jahren nicht empfohlen."
         ),
-        expected_section_number=["8.2.", "7.1.", "19.5.1."],
+        expected_section_number="8.2.",
     ),
     EvalQuestion(
         id=8,
@@ -101,7 +101,7 @@ QUESTIONS: list[EvalQuestion] = [
             "ein durchschnittliches kumulatives CIN 3+ Risiko von 10% gestellt werden (Empfehlung 10.2, "
             "Konsensbasierte Empfehlung, EK)."
         ),
-        expected_section_number=["10.2.", "11.4.", "18.5.", "16.1."],
+        expected_section_number="10.2.",
     ),
     EvalQuestion(
         id=9,
@@ -113,7 +113,7 @@ QUESTIONS: list[EvalQuestion] = [
             "Infektion mit den Impf-HPV-Typen (u.a. 16, 18) sowie die Entstehung der daraus resultierenden "
             "Krebsvorstufen."
         ),
-        expected_section_number=["5.1.", "2.1.2.3.", "4.1.", "5.6."],
+        expected_section_number="5.1.",
     ),
     EvalQuestion(
         id=10,

@@ -68,7 +68,7 @@ SPARSE_TOP_K = _int("SPARSE_TOP_K", 60)
 # Limits the reranker's input to a multiple of its expected output,
 # avoiding too much noise while still capturing enough context.
 RERANK_TOP_K = _int("RERANK_TOP_K", 5)
-FUSED_TOP_K = _int("FUSED_TOP_K", RERANK_TOP_K * 4)
+FUSED_TOP_K = _int("FUSED_TOP_K", 30)
 RERANK_DIAGNOSTIC_K = _int("RERANK_DIAGNOSTIC_K", 15)
 RERANK_CONFIDENCE_THRESHOLD = _float("RERANK_CONFIDENCE_THRESHOLD", 0.1)
 LANGUAGE_BONUS = _float("LANGUAGE_BONUS", 0.15)
